@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn = "navigation_view">
+
+    <group
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:fontFamily="@font/poppins_regular"
+            android:icon="@drawable/outline_home_24"
+            android:title="Home" />
+
+        <item
+            android:id="@+id/nav_events"
+            android:icon="@drawable/outline_event_24"
+            android:fontFamily="@font/poppins_regular"
+            android:title="Events"/>
+
+        <item
+            android:id="@+id/nav_announcement"
+            android:icon="@drawable/outline_announcement_24"
+            android:fontFamily="@font/poppins_regular"
+            android:title="Announcements"/>
+
+        <item
+            android:id="@+id/nav_balance"
+            android:icon="@drawable/outline_account_balance_wallet_24"
+            android:fontFamily="@font/poppins_regular"
+            android:title="Penalty Balance"/>
+
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/outline_settings_24"
+            android:fontFamily="@font/poppins_regular"
+            android:title="Settings"/>
+
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/baseline_logout_24"
+            android:fontFamily="@font/poppins_regular"
+            android:title="Logout"/>
+    </group>
+</menu>
