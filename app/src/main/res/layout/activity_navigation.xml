@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
     tools:openDrawer="start"
+    android:background="#FAFCFC"
     tools:context=".NavigationActivity">
 
     <LinearLayout
@@ -22,7 +23,38 @@
             android:background="@color/darkblue"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            android:layout_gravity="top"/>
+            android:layout_gravity="top">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageButton
+                    android:id="@+id/btnProfile"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="10dp"
+                    android:contentDescription="@string/profile"
+                    android:src="@mipmap/ic_profile"
+                    android:background="@color/darkblue"
+                    android:scaleType="centerInside"/>
+
+
+                <ImageButton
+                    android:id="@+id/btnNotification"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@color/darkblue"
+                    app:tint="@color/white"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/baseline_notifications_24"
+                    android:contentDescription="@string/notification"
+                    android:layout_toStartOf="@id/btnProfile"/>
+
+            </RelativeLayout>
+        </androidx.appcompat.widget.Toolbar>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -41,7 +73,6 @@
         app:itemShapeAppearance="@style/Style_menu"
         android:paddingHorizontal="10dp"
         app:menu="@menu/nav_menu"
-
         app:itemIconTint="@drawable/menu_item_text_color"
         app:itemTextColor="@drawable/menu_item_text_color"
         app:itemBackground="@drawable/menu_item_background"

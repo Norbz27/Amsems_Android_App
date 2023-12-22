@@ -44,7 +44,12 @@ public class LoginActivity extends AppCompatActivity {
                 if (isValidCredentials(id, password)) {
                     // Successful login, navigate to the next screen
                     // Replace with your desired screen navigation logic
-                    startActivity(new Intent(LoginActivity.this, NavigationActivity.class));
+                    Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
+
+                    // Pass Student_ID to NavigationActivity
+                    intent.putExtra("STUDENT_ID", id);
+
+                    startActivity(intent);
                     finish();
                 //    Toast.makeText(LoginActivity.this, "valid credentials", Toast.LENGTH_SHORT).show();
                  } else {
@@ -61,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
             Connection connection = con.connectionClass();
 
             // Use a PreparedStatement to avoid SQL injection vulnerabilities
-            String query = "SELECT * FROM tbl_student_accounts WHERE ID=? AND Password=?";
+            String query = "SELECT * FROM tbl_student_accounts WHERE ID=? AND Password=? AND Status=1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, id);
                 preparedStatement.setString(2, password);
