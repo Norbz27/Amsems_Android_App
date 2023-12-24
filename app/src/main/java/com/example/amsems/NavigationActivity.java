@@ -79,7 +79,18 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         profilePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new ProfileFragment()).commit();
+                // Create a new instance of the ProfileFragment
+                ProfileFragment profileFragment = new ProfileFragment();
+
+                // Create a Bundle to pass data to the fragment
+                Bundle bundle = new Bundle();
+                bundle.putString("studId", studentId); // Replace yourUserId with the actual user ID
+
+                // Set the arguments for the fragment
+                profileFragment.setArguments(bundle);
+
+                // Begin the fragment transaction and replace the existing fragment with the ProfileFragment
+                getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, profileFragment).commit();
             }
         });
     }

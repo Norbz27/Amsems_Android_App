@@ -11,6 +11,7 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="colorControlActivated">@color/darkblue</item>
         <!-- Customize your theme here. -->
 
     </style>
@@ -26,6 +27,7 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="colorControlActivated">@color/darkblue</item>
         <!-- Customize your theme here. -->
     </style>
 

@@ -38,8 +38,9 @@
                     android:layout_marginEnd="10dp"
                     android:contentDescription="@string/profile"
                     android:src="@mipmap/ic_profile"
+                    android:padding="5dp"
                     android:background="@color/darkblue"
-                    android:scaleType="centerInside"/>
+                    android:scaleType="fitXY"/>
 
 
                 <ImageButton
