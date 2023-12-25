@@ -1,40 +1,69 @@
 package com.example.amsems;
 
+import static android.app.Activity.RESULT_OK;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.github.drjacky.imagepicker.ImagePicker;
+import com.github.drjacky.imagepicker.constant.ImageProvider;
+import com.google.android.material.navigation.NavigationView;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import kotlin.jvm.internal.Intrinsics;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements NavigationView.OnNavigationItemSelectedListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,6 +71,18 @@ public class ProfileFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     private TextView tvAcad, tvDep, tvSec, tvProg, tvYearlvl, tvStudId, tvName;
     private ImageView profilePic;
+    private Uri uri;
+
+    private final ActivityResultLauncher<Intent> imagePickerLauncher=
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),(ActivityResult result)->{
+                if(result.getResultCode()==RESULT_OK){
+                    Uri uri=result.getData().getData();
+                    profilePic.setImageURI(uri);
+                    Toast.makeText(getActivity(), "Image Selected", Toast.LENGTH_SHORT).show();
+                }else if(result.getResultCode()==ImagePicker.RESULT_ERROR){
+                    Toast.makeText(getActivity(), "No Image Selected", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -91,9 +132,14 @@ public class ProfileFragment extends Fragment {
         profilePic = view.findViewById(R.id.profilePic);
         tvStudId = view.findViewById(R.id.tvStudID);
         tvName = view.findViewById(R.id.tvName);
-
         ImageButton btnEditpass = view.findViewById(R.id.btnEditPass);
 
+        profilePic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showBottomDialog();
+            }
+        });
 
         Bundle args = getArguments();
         if (args != null) {
@@ -117,6 +163,46 @@ public class ProfileFragment extends Fragment {
         });
         return view;
     }
+    public void showBottomDialog(){
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.profile_bottom_sheet);
+
+        Button btnChangeProf = dialog.findViewById(R.id.btnChangePic);
+        Button btnRemoveProf = dialog.findViewById(R.id.btnRemoveProf);
+        btnChangeProf.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                com.github.dhaval2404.imagepicker.ImagePicker.Companion.with(getActivity())
+                        .crop()
+                        .maxResultSize(512,512)
+                        .createIntent((Function1)(new Function1(){
+                            public Object invoke(Object var1){
+                                this.invoke((Intent)var1);
+                                return Unit.INSTANCE;
+                            }
+
+                            public final void invoke(@NotNull Intent it){
+                                Intrinsics.checkNotNullParameter(it,"it");
+                                imagePickerLauncher.launch(it);
+                            }
+                        }));
+            }
+        });
+        btnRemoveProf.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+    }
+
     @SuppressLint("SetTextI18n")
     private void getProfilePic(String id) {
         byte[] imageData = null;
@@ -171,5 +257,10 @@ public class ProfileFragment extends Fragment {
         } catch (SQLException e) {
             Log.e(TAG, "SQL Exception: " + e.getMessage());
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        return true;
     }
 }

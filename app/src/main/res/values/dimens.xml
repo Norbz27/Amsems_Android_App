@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/values/dimens.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/values/dimens.xml -->
 <resources>
     <dimen name="profile_image_size">150dp</dimen>
+    <dimen name="list_item_spacing">16dp</dimen>
+    <dimen name="list_item_spacing_half">8dp</dimen>
 </resources>

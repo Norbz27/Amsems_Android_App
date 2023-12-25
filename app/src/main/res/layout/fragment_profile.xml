@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ProfileFragment">
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -227,11 +226,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/profilePic"
-                android:layout_marginStart="-30dp"
+                android:layout_marginStart="-35dp"
+                android:padding="5dp"
                 android:layout_marginTop="8dp"
                 android:layout_toEndOf="@+id/profilePic"
-                android:background="#00FFFFFF"
-                android:src="@drawable/baseline_settings_24"
+                android:background="@drawable/circle_profile"
+                android:src="@drawable/baseline_camera_alt_24"
                 android:visibility="visible" />
 
         </RelativeLayout>

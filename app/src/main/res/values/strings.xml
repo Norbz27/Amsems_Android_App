@@ -7,4 +7,6 @@
     <string name="profile">profile</string>
     <string name="notification">notification</string>
     <string name="edit">edit</string>
+    
+    <string name="changePrf_button_text"><font size="15">Change Profile Picture</font>\n<font size="9" style="normal">Upload a PNG or JPG Image</font></string>
 </resources>
