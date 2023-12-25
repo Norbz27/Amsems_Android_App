@@ -6,6 +6,7 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -49,6 +50,10 @@ import com.google.android.material.navigation.NavigationView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -69,6 +74,7 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private String studid;
     private TextView tvAcad, tvDep, tvSec, tvProg, tvYearlvl, tvStudId, tvName;
     private ImageView profilePic;
     private Uri uri;
@@ -77,8 +83,9 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),(ActivityResult result)->{
                 if(result.getResultCode()==RESULT_OK){
                     Uri uri=result.getData().getData();
-                    profilePic.setImageURI(uri);
-                    Toast.makeText(getActivity(), "Image Selected", Toast.LENGTH_SHORT).show();
+                    byte[] imageByte = uriToByteArray(getActivity(), uri);
+                    updateProfilePic(studid,imageByte);
+                    Toast.makeText(getActivity(), "Successfully Change Profile", Toast.LENGTH_SHORT).show();
                 }else if(result.getResultCode()==ImagePicker.RESULT_ERROR){
                     Toast.makeText(getActivity(), "No Image Selected", Toast.LENGTH_SHORT).show();
                 }
@@ -144,7 +151,7 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
         Bundle args = getArguments();
         if (args != null) {
             String studId = args.getString("studId", null); // Replace -1 with a default value if needed
-
+            studid = studId;
             getProfilePic(studId);
         }
 
@@ -202,7 +209,64 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
         dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
         dialog.getWindow().setGravity(Gravity.BOTTOM);
     }
+    public void updateProfilePic(String studentId, byte[] newProfilePic) {
+        try {
+            Connection connection = SQL_Connection.connectionClass();
 
+            // Use a PreparedStatement to avoid SQL injection vulnerabilities
+            String updateQuery = "UPDATE tbl_student_accounts SET Profile_pic = ? WHERE ID = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+                // Set the new profile picture and student ID as parameters
+                preparedStatement.setBytes(1, newProfilePic);
+                preparedStatement.setString(2, studentId);
+
+                // Execute the update query
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    Toast.makeText(getActivity(), "Profile picture updated successfully.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getActivity(), "Failed to update profile picture. Student not found.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static byte[] uriToByteArray(Context context, Uri uri) {
+        try {
+            ContentResolver contentResolver = context.getContentResolver();
+
+            // Open an input stream from the content resolver
+            InputStream inputStream = contentResolver.openInputStream(uri);
+
+            // Convert the input stream to a byte array
+            byte[] bytes = getBytesFromInputStream(inputStream);
+
+            // Close the input stream
+            if (inputStream != null) {
+                inputStream.close();
+            }
+
+            return bytes;
+        } catch (IOException e) {
+            Log.e("ImageUtils", "Error converting URI to byte array: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private static byte[] getBytesFromInputStream(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len;
+
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, len);
+        }
+
+        return byteArrayOutputStream.toByteArray();
+    }
     @SuppressLint("SetTextI18n")
     private void getProfilePic(String id) {
         byte[] imageData = null;
