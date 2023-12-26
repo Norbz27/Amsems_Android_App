@@ -4,7 +4,9 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +25,8 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     EditText edStudID, edPass;
     SQL_Connection con;
+    SharedPreferences sharedPreferences;
+    Intent intent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +36,11 @@ public class LoginActivity extends AppCompatActivity {
         edStudID = findViewById(R.id.tbSchID);
         edPass = findViewById(R.id.tbPass);
 
+        sharedPreferences = getSharedPreferences("stud_info", MODE_PRIVATE);
+        intent = new Intent(LoginActivity.this, NavigationActivity.class);
+        if(sharedPreferences.contains("studentID") && sharedPreferences.contains("password")){
+            startActivity(intent);
+        }
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -42,16 +51,12 @@ public class LoginActivity extends AppCompatActivity {
 
                 // Perform authentication or any other login actions
                 if (isValidCredentials(id, password)) {
-                    // Successful login, navigate to the next screen
-                    // Replace with your desired screen navigation logic
-                    Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
-
-                    // Pass Student_ID to NavigationActivity
-                    intent.putExtra("STUDENT_ID", id);
-
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("studentID", id);
+                    editor.putString("password", password);
+                    editor.apply();
                     startActivity(intent);
                     finish();
-                //    Toast.makeText(LoginActivity.this, "valid credentials", Toast.LENGTH_SHORT).show();
                  } else {
                     // Invalid credentials, show error message or handle accordingly
                     Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();

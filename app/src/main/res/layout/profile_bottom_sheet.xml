@@ -17,25 +17,31 @@
 
     <Button
         android:id="@+id/btnChangePic"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="match_parent"
         android:layout_height="61dp"
+
         android:layout_marginTop="20dp"
-        android:background="#00FFFFFF"
-        android:paddingStart="25dp"
+        android:background="#FAFCFC"
         android:fontFamily="@font/poppins_semibold"
+        android:paddingStart="25dp"
         android:text="@string/changePrf_button_text"
         android:textAlignment="textStart"
-        android:textAllCaps="false" />
+        android:textAllCaps="false"
+        android:textColor="#000000" />
+
     <Button
         android:id="@+id/btnRemoveProf"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="match_parent"
+
         android:layout_height="61dp"
-        android:background="#00FFFFFF"
-        android:paddingStart="25dp"
+        android:background="#FAFCFC"
         android:fontFamily="@font/poppins_semibold"
+        android:paddingStart="25dp"
         android:text="Remove Profile Picture"
-        android:textColor="#F44336"
         android:textAlignment="textStart"
-        android:textSize="15sp"
-        android:textAllCaps="false" />
+        android:textAllCaps="false"
+        android:textColor="#F44336"
+        android:textSize="15sp" />
 </LinearLayout>

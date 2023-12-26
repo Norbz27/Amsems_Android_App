@@ -1,6 +1,7 @@
 package com.example.amsems;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.MODE_PRIVATE;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.annotation.SuppressLint;
@@ -9,6 +10,7 @@ import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -58,6 +60,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -78,7 +81,8 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
     private TextView tvAcad, tvDep, tvSec, tvProg, tvYearlvl, tvStudId, tvName;
     private ImageView profilePic;
     private Uri uri;
-
+    SharedPreferences sharedPreferences;
+    Intent intent;
     private final ActivityResultLauncher<Intent> imagePickerLauncher=
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),(ActivityResult result)->{
                 if(result.getResultCode()==RESULT_OK){
@@ -148,24 +152,23 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
             }
         });
 
-        Bundle args = getArguments();
-        if (args != null) {
-            String studId = args.getString("studId", null); // Replace -1 with a default value if needed
-            studid = studId;
-            getProfilePic(studId);
-        }
+        sharedPreferences = Objects.requireNonNull(getActivity()).getSharedPreferences("stud_info", MODE_PRIVATE);
+        String studId = sharedPreferences.getString("studentID", null);
+        studid = studId;
+        getProfilePic(studId);
+
+        intent = new Intent(getActivity(), EditPassActivity.class);
+        //Bundle args = getArguments();
+        //if (args != null) {
+        //    String studId = args.getString("studId", null); // Replace -1 with a default value if needed
+        //    studid = studId;
+        //    getProfilePic(studId);
+        //}
 
         btnEditpass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle args = getArguments();
-                if (args != null) {
-                    String studId = args.getString("studId", null); // Replace -1 with a default value if needed
-
-                    Intent intent = new Intent(getActivity(), EditPassActivity.class);
-                    intent.putExtra("STUDENT_ID", studId);
-                    startActivity(intent);
-                }
+                startActivity(intent);
             }
         });
         return view;

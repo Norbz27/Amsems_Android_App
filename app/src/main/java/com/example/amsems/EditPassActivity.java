@@ -10,6 +10,7 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -29,12 +30,15 @@ import java.util.Objects;
 
 public class EditPassActivity extends AppCompatActivity {
     EditText etNewPass, etCurPass, etConPass;
+    SharedPreferences sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_pass);
 
-        String studentId = getIntent().getStringExtra("STUDENT_ID");
+        sharedPreferences = getSharedPreferences("stud_info", MODE_PRIVATE);
+
+        String studentId = sharedPreferences.getString("studentID", null);
 
         etNewPass = findViewById(R.id.etNewPass);
         etCurPass = findViewById(R.id.etCurrPass);

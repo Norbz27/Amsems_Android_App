@@ -12,6 +12,8 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -33,12 +35,17 @@ import androidx.core.content.ContextCompat;
 public class NavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ImageButton profilePic;
     private DrawerLayout drawerLayout;
+    SharedPreferences sharedPreferences;
+    Intent intent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
-        String studentId = getIntent().getStringExtra("STUDENT_ID");
+        sharedPreferences = getSharedPreferences("stud_info", MODE_PRIVATE);
+
+
+        String studentId = sharedPreferences.getString("studentID", "null");
 
         profilePic = findViewById(R.id.btnProfile);
 
@@ -80,17 +87,17 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             @Override
             public void onClick(View view) {
                 // Create a new instance of the ProfileFragment
-                ProfileFragment profileFragment = new ProfileFragment();
+                //ProfileFragment profileFragment = new ProfileFragment();
 
                 // Create a Bundle to pass data to the fragment
-                Bundle bundle = new Bundle();
-                bundle.putString("studId", studentId); // Replace yourUserId with the actual user ID
+                //Bundle bundle = new Bundle();
+                //bundle.putString("studId", studentId); // Replace yourUserId with the actual user ID
 
                 // Set the arguments for the fragment
-                profileFragment.setArguments(bundle);
+                //profileFragment.setArguments(bundle);
 
                 // Begin the fragment transaction and replace the existing fragment with the ProfileFragment
-                getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, profileFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new ProfileFragment()).commit();
             }
         });
     }
@@ -134,7 +141,13 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                 getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new SettingsFragment()).commit();
                 break;
             case R.id.nav_logout:
-                Toast.makeText(this, "Logout!", Toast.LENGTH_SHORT).show();
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.clear();
+                editor.commit();
+                editor.apply();
+                intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                finish();
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
