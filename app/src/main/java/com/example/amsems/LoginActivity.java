@@ -2,9 +2,6 @@ package com.example.amsems;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,14 +9,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
@@ -31,6 +28,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
         con = new SQL_Connection();
         btnLogin = findViewById(R.id.btnLogin);
         edStudID = findViewById(R.id.tbSchID);
@@ -41,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         if(sharedPreferences.contains("studentID") && sharedPreferences.contains("password")){
             startActivity(intent);
         }
+
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,7 +68,6 @@ public class LoginActivity extends AppCompatActivity {
 
         try {
             Connection connection = con.connectionClass();
-
             // Use a PreparedStatement to avoid SQL injection vulnerabilities
             String query = "SELECT * FROM tbl_student_accounts WHERE ID=? AND Password=? AND Status=1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -85,7 +83,6 @@ public class LoginActivity extends AppCompatActivity {
         } catch (SQLException e) {
             Log.e(TAG, "SQL Exception: " + e.getMessage());
         }
-
         return isValid;
     }
 }

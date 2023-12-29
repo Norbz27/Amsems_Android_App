@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -83,6 +84,7 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
     private Uri uri;
     SharedPreferences sharedPreferences;
     Intent intent;
+    Dialog dialog;
     private final ActivityResultLauncher<Intent> imagePickerLauncher=
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),(ActivityResult result)->{
                 if(result.getResultCode()==RESULT_OK){
@@ -90,6 +92,7 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
                     byte[] imageByte = uriToByteArray(getActivity(), uri);
                     updateProfilePic(studid,imageByte);
                     Toast.makeText(getActivity(), "Successfully Change Profile", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 }else if(result.getResultCode()==ImagePicker.RESULT_ERROR){
                     Toast.makeText(getActivity(), "No Image Selected", Toast.LENGTH_SHORT).show();
                 }
@@ -174,7 +177,7 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
         return view;
     }
     public void showBottomDialog(){
-        final Dialog dialog = new Dialog(getActivity());
+        dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.profile_bottom_sheet);
 
@@ -202,7 +205,9 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
         btnRemoveProf.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                removeProfilePic(studid, getActivity());
+                profilePic.setImageResource(R.drawable.man);
+                dialog.dismiss();
             }
         });
 
@@ -269,6 +274,47 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
         }
 
         return byteArrayOutputStream.toByteArray();
+    }
+    public void removeProfilePic(String studentId, Context context) {
+        try {
+            Connection connection = SQL_Connection.connectionClass();
+
+            // Use a PreparedStatement to avoid SQL injection vulnerabilities
+            String updateQuery = "UPDATE tbl_student_accounts SET Profile_pic = ? WHERE ID = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+                // Set the default profile picture from a drawable resource
+                byte[] defaultImageData = getDefaultImageData(context);
+                preparedStatement.setBytes(1, defaultImageData);
+                preparedStatement.setString(2, studentId);
+
+                // Execute the update query
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    System.out.println("Profile picture reset to default successfully.");
+                } else {
+                    System.out.println("Failed to reset profile picture. Student not found.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Method to convert a drawable to a byte array
+    private byte[] getDefaultImageData(Context context) {
+        Drawable defaultDrawable = ContextCompat.getDrawable(context, R.drawable.man);
+
+        if (defaultDrawable instanceof BitmapDrawable) {
+            Bitmap bitmap = ((BitmapDrawable) defaultDrawable).getBitmap();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            return outputStream.toByteArray();
+        } else {
+            // Handle other drawable types if needed
+            return null;
+        }
     }
     @SuppressLint("SetTextI18n")
     private void getProfilePic(String id) {
