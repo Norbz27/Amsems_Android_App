@@ -40,6 +40,7 @@
             android:layout_height="match_parent"
             android:layout_below="@id/textView10"
             android:fillViewport="true"
+            android:scrollbars="none"
             android:layout_marginTop="5dp">
 
             <androidx.recyclerview.widget.RecyclerView

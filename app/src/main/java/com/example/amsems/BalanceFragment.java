@@ -11,13 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.amsems.utils.EventPenaltyAdapter;
+import com.example.amsems.utils.TransactionHisAdapter;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,8 +40,8 @@ public class BalanceFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     SharedPreferences sharedPreferences;
     TextView tvTotalPenBal, tvTotalPen, tvTotalPay, tvTotalPenBal2, tvTotalPen2, tvTotalPay2;
-    RecyclerView resEventsPen;
-    ArrayList<String> _id, _name, _date, _ammount;
+    RecyclerView resEventsPen, resTransact;
+    ArrayList<String> _id, _name, _date, _ammount, _studID, _payedAmmount, _payedDate;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -91,6 +91,7 @@ public class BalanceFragment extends Fragment {
         tvTotalPen2 = view.findViewById(R.id.tvTotalPen2);
         tvTotalPay2 = view.findViewById(R.id.tvTotalPay2);
         resEventsPen = view.findViewById(R.id.resEventsPen);
+        resTransact = view.findViewById(R.id.resTransact);
 
         sharedPreferences = getActivity().getSharedPreferences("stud_info", MODE_PRIVATE);
 
@@ -101,11 +102,51 @@ public class BalanceFragment extends Fragment {
         _date = new ArrayList<>();
         _ammount = new ArrayList<>();
 
+        _studID = new ArrayList<>();
+        _payedAmmount = new ArrayList<>();
+        _payedDate = new ArrayList<>();
+
         displayTotalBalance(studentId);
 
         displayEventPenalty(studentId);
-
+        displayTransaction(studentId);
         return view;
+    }
+    public void displayTransaction(String studId){
+        try {
+            Connection connection = SQL_Connection.connectionClass();
+
+            String query = "SELECT Student_ID, Payment_Amount, Date FROM tbl_transaction WHERE Student_ID = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, studId);
+                _studID.clear();
+                _payedAmmount.clear();
+                _payedDate.clear();
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        // Extract data from the result set
+                        String studentId = resultSet.getString("Student_ID");
+                        Date date = resultSet.getDate("Date");
+                        double totalBalanceFee = resultSet.getDouble("Payment_Amount");
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM, yyyy");
+                        String balfeeformattedValue = String.format("%.2f", totalBalanceFee);
+                        String dateformatted = dateFormat.format(date);
+
+                        _studID.add(studentId);
+                        _payedDate.add(dateformatted);
+                        _payedAmmount.add("Php "+balfeeformattedValue);
+
+                        TransactionHisAdapter eventPenaltyAdapter = new TransactionHisAdapter(getActivity(), _studID, _payedDate, _payedAmmount);
+                        resTransact.setAdapter(eventPenaltyAdapter);
+                        resTransact.setLayoutManager(new LinearLayoutManager(getActivity()));
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            Log.e(TAG, "SQL Exception: " + e.getMessage());
+        }
     }
     public void displayEventPenalty(String studId){
         try {
@@ -153,7 +194,7 @@ public class BalanceFragment extends Fragment {
                         _name.add(eventName);
                         _date.add(dateformatted);
                         _ammount.add("Php "+balfeeformattedValue);
-                        Toast.makeText(getActivity(), studentId, Toast.LENGTH_SHORT).show();
+
                         EventPenaltyAdapter eventPenaltyAdapter = new EventPenaltyAdapter(getActivity(), _id, _name, _date, _ammount);
                         resEventsPen.setAdapter(eventPenaltyAdapter);
                         resEventsPen.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -219,11 +260,11 @@ public class BalanceFragment extends Fragment {
                         String rembalformattedValue = String.format("%.2f", remainingBalance);
 
                         tvTotalPenBal.setText("Php "+rembalformattedValue);
-                        tvTotalPen.setText("Php "+payamformattedValue);
-                        tvTotalPay.setText("Php "+balfeeformattedValue);
+                        tvTotalPen.setText("Php "+balfeeformattedValue);
+                        tvTotalPay.setText("Php "+payamformattedValue);
                         tvTotalPenBal2.setText("Php "+rembalformattedValue);
-                        tvTotalPen2.setText("Php "+payamformattedValue);
-                        tvTotalPay2.setText("Php "+balfeeformattedValue);
+                        tvTotalPen2.setText("Php "+balfeeformattedValue);
+                        tvTotalPay2.setText("Php "+payamformattedValue);
                     }
                 }
             }
