@@ -10,4 +10,6 @@
     <color name="darkblue">#323484</color>
     <color name="darkblue_a">#59323484</color>
     <color name="darkblue_v">#3F51B5</color>
+    <color name="back">#FAFCFC</color>
+    <color name="text">#202020</color>
 </resources>

@@ -18,12 +18,6 @@
             android:title="Events"/>
 
         <item
-            android:id="@+id/nav_announcement"
-            android:icon="@drawable/outline_announcement_24"
-            android:fontFamily="@font/poppins_regular"
-            android:title="Announcements"/>
-
-        <item
             android:id="@+id/nav_balance"
             android:icon="@drawable/outline_account_balance_wallet_24"
             android:fontFamily="@font/poppins_regular"

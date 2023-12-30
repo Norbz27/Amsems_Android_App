@@ -118,9 +118,6 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             case R.id.nav_events:
                 getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new EventsFragment()).commit();
                 break;
-            case R.id.nav_announcement:
-                getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new AnnouncementsFragment()).commit();
-                break;
             case R.id.nav_balance:
                 getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new BalanceFragment()).commit();
                 break;

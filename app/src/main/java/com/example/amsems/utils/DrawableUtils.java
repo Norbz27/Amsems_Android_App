@@ -33,7 +33,7 @@ public final class DrawableUtils {
         int color = Color.parseColor(hexColor);
 
         // Create a GradientDrawable for the background
-        GradientDrawable background = (GradientDrawable) ContextCompat.getDrawable(context, R.drawable.custom_selector);
+        GradientDrawable background = (GradientDrawable) ContextCompat.getDrawable(context, R.drawable.custom_selector2);
 
         // Set the color of the background
         if (background != null) {

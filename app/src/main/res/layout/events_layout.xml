@@ -7,9 +7,11 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="10dp"
     android:layout_marginHorizontal="20dp"
+    android:id="@+id/cardviewEvent"
     android:layout_marginVertical="5dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#FAFCFC"

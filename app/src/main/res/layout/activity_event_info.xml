@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/back"
+    android:layout_height="match_parent"
+    tools:context=".EventInfoActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarEventInfo"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="top"
+        android:background="@color/darkblue"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/poppins_semibold"
+                android:text="Event Information"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="17sp" />
+        </androidx.appcompat.widget.Toolbar>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbarEventInfo">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/ivEvent"
+                android:layout_width="411dp"
+                android:layout_height="226dp"
+                android:src="@drawable/events"
+                android:scaleType="fitXY"/>
+
+            <TextView
+                android:id="@+id/tvEventName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/ivEvent"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="25dp"
+                android:layout_marginEnd="25dp"
+                android:layout_marginBottom="20dp"
+                android:fontFamily="@font/poppins_semibold_italic"
+                android:text="Event Name"
+                android:textColor="#393939"
+                android:textSize="27sp" />
+
+            <LinearLayout
+                android:id="@+id/linear1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/tvEventName"
+                android:layout_centerHorizontal="true">
+                <TextView
+                    android:id="@+id/textView9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginStart="25dp" />
+
+                <EditText
+                    android:id="@+id/startdateEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="25dp"
+                    android:layout_marginStart="30dp"
+                    android:hint="Date"
+                    android:textColor="@color/black"
+                    android:enabled="false"
+                    android:background="@drawable/date_time_back"
+                    android:textSize="16sp"
+                    android:focusable="false" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linear2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/linear1"
+                android:layout_marginTop="25dp"
+                android:layout_centerHorizontal="true">
+                <TextView
+                    android:id="@+id/textView10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="End"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginStart="25dp" />
+
+                <EditText
+                    android:id="@+id/enddateEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="25dp"
+                    android:layout_marginStart="40dp"
+                    android:hint="Date"
+                    android:textColor="@color/black"
+                    android:enabled="false"
+                    android:background="@drawable/date_time_back"
+                    android:textSize="16sp"
+                    android:focusable="false" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvdetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Event Details"
+                android:layout_below="@id/linear2"
+                android:layout_marginHorizontal="25dp"
+                android:layout_marginTop="20dp"
+                android:textSize="19sp"
+                android:fontFamily="@font/poppins_semibold"
+                android:textColor="@color/darkblue"/>
+            <TextView
+                android:id="@+id/des"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Description"
+                android:layout_marginTop="20dp"
+                android:layout_below="@id/linear3"
+                android:layout_marginStart="25dp"
+                android:fontFamily="@font/poppins_semibold"
+                android:textColor="#595959"
+                android:textSize="12sp"/>
+            <EditText
+                android:id="@+id/edEventDes"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginHorizontal="25dp"
+                android:background="@drawable/tv_back_white_round_outlined"
+                android:ems="10"
+                android:fontFamily="@font/poppins_regular"
+                android:textSize="15sp"
+                android:enabled="false"
+                android:hint="Description"
+                android:textColor="@color/black"
+                android:gravity="start|top"
+                android:inputType="textMultiLine"
+                android:padding="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_below="@id/des"
+                android:layout_marginBottom="20dp"/>
+            <LinearLayout
+                android:id="@+id/linear3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/linear5"
+                android:layout_marginTop="10dp">
+                <TextView
+                    android:id="@+id/textView15"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Audience: "
+                    android:textSize="16sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginStart="25dp" />
+                <TextView
+                    android:id="@+id/tvAudience"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="All Student"
+                    android:textSize="16sp"
+                    android:layout_marginStart="40dp"
+                    android:fontFamily="@font/poppins_regular"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linear4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/tvdetail"
+                android:layout_marginTop="10dp">
+                <TextView
+                    android:id="@+id/textView16"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Attendance: "
+                    android:textSize="16sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginStart="25dp" />
+                <TextView
+                    android:id="@+id/tvAttendance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Required"
+                    android:textSize="16sp"
+                    android:layout_marginStart="25dp"
+                    android:fontFamily="@font/poppins_regular"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/linear5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/linear4"
+                android:layout_marginTop="10dp">
+                <TextView
+                    android:id="@+id/textView17"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Penalty: "
+                    android:textSize="16sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginStart="25dp" />
+                <TextView
+                    android:id="@+id/tvPenalty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Yes"
+                    android:textSize="16sp"
+                    android:layout_marginStart="55dp"
+                    android:fontFamily="@font/poppins_regular"/>
+            </LinearLayout>
+        </RelativeLayout>
+    </ScrollView>
+</RelativeLayout>

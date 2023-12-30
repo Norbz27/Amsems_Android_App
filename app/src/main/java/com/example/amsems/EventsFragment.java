@@ -1,6 +1,8 @@
 package com.example.amsems;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,7 @@ import com.applandeo.materialcalendarview.CalendarDay;
 import com.applandeo.materialcalendarview.CalendarView;
 import com.example.amsems.utils.DisplayEventDataAsyncTask;
 import com.example.amsems.utils.DrawableUtils;
+import com.example.amsems.utils.EventRecyclerViewInterface;
 import com.example.amsems.utils.FetchEventDataAsyncTask;
 
 import java.sql.Connection;
@@ -31,7 +34,7 @@ import java.util.List;
  * Use the {@link EventsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class EventsFragment extends Fragment {
+public class EventsFragment extends Fragment implements EventRecyclerViewInterface {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -44,7 +47,7 @@ public class EventsFragment extends Fragment {
     List<CalendarDay> events;
     CalendarView calendarView;
     RecyclerView recyclerView;
-    ArrayList<String> _name, _date, _color;
+    ArrayList<String> _name, _date, _color, _id;
     Date selectedDate;
     public EventsFragment() {
         // Required empty public constructor
@@ -91,19 +94,17 @@ public class EventsFragment extends Fragment {
         _name = new ArrayList<>();
         _date = new ArrayList<>();
         _color = new ArrayList<>();
+        _id = new ArrayList<>();
 
-        Calendar calendar = Calendar.getInstance();
-        CalendarDay calendarDay = new CalendarDay(calendar);
-        calendarDay.setBackgroundDrawable(DrawableUtils.getDayCircle(getActivity(), com.applandeo.materialcalendarview.R.color.defaultColor, android.R.color.transparent));
-        events.add(calendarDay);
-        getEventDates();
+        new GetEventDatesAsyncTask().execute();
 
         Date now = new Date();
         // Define the date format
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
 
+
         String formattedDateCurrent = sdf2.format(now);
-        new FetchEventDataAsyncTask(getContext(), recyclerView, _name, _date, _color).execute(formattedDateCurrent);
+        new FetchEventDataAsyncTask(getContext(), recyclerView, _id, _name, _date, _color, this).execute(formattedDateCurrent);
 
         //Toast.makeText(getActivity(), formattedDateCurrent, Toast.LENGTH_SHORT).show();
 
@@ -111,68 +112,10 @@ public class EventsFragment extends Fragment {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             selectedDate = eventDay.getCalendar().getTime();
             String formattedDate = sdf.format(selectedDate);
-            new DisplayEventDataAsyncTask(getContext(), recyclerView, _name, _date, _color).execute(formattedDate);
+            new DisplayEventDataAsyncTask(getContext(), recyclerView, _id,_name, _date, _color, this).execute(formattedDate);
             //Toast.makeText(getActivity(), formattedDate, Toast.LENGTH_SHORT).show();
         });
-
-
         return view;
-    }
-    public void getEventDates() {
-        try {
-            Connection connection = SQL_Connection.connectionClass();
-
-            if (connection != null) {
-                String query = "SELECT Start_Date, End_Date FROM tbl_events";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                     ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                    if (resultSet != null) {
-                        while (resultSet.next()) {
-                            String startDateString = resultSet.getString("Start_Date");
-                            String endDateString = resultSet.getString("End_Date");
-
-                            List<Date> datesBetween = getDatesBetween(startDateString, endDateString);
-
-                            @SuppressLint("SimpleDateFormat")
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                            Date startDate = dateFormat.parse(startDateString);
-                            Date endDate = dateFormat.parse(endDateString);
-
-                            Calendar calendar = Calendar.getInstance();
-                            calendar.setTime(startDate);
-
-                            CalendarDay calendarDay = new CalendarDay(calendar);
-                            calendarDay.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(getActivity(), ""));
-                            calendarDay.setLabelColor(R.color.white);
-                            events.add(calendarDay);
-
-                            Calendar calendar2 = Calendar.getInstance();
-                            calendar2.setTime(endDate);
-
-                            CalendarDay calendarDay2 = new CalendarDay(calendar2);
-                            calendarDay2.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(getActivity(), ""));
-                            calendarDay2.setLabelColor(R.color.white);
-                            events.add(calendarDay2);
-
-                            for (Date date : datesBetween) {
-                                Calendar calendar3 = Calendar.getInstance();
-                                calendar3.setTime(date);
-                                CalendarDay calendarDay3 = new CalendarDay(calendar3);
-                                calendarDay3.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(getActivity(), ""));
-                                calendarDay3.setLabelColor(R.color.white);
-                                events.add(calendarDay3);
-                            }
-                        }
-                        calendarView.setCalendarDays(events);
-                    }
-                } finally {
-                    connection.close();
-                }
-            }
-        } catch (SQLException | ParseException e) {
-            e.printStackTrace();
-        }
     }
     public static List<Date> getDatesBetween(String startDateString, String endDateString) throws ParseException {
         List<Date> dates = new ArrayList<>();
@@ -190,5 +133,89 @@ public class EventsFragment extends Fragment {
         }
 
         return dates;
+    }
+
+    @Override
+    public void onEventClick(int position, String eventid) {
+        Intent intent = new Intent(getActivity(), EventInfoActivity.class);
+        intent.putExtra("EventID", eventid);
+        //Toast.makeText(getActivity(), eventid, Toast.LENGTH_SHORT).show();
+        startActivity(intent);
+    }
+
+    private class GetEventDatesAsyncTask extends AsyncTask<Void, Void, List<CalendarDay>> {
+        @Override
+        protected List<CalendarDay> doInBackground(Void... voids) {
+            List<CalendarDay> events = new ArrayList<>();
+
+            try {
+                Connection connection = SQL_Connection.connectionClass();
+
+                if (connection != null) {
+                    String query = "SELECT Start_Date, End_Date FROM tbl_events";
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                         ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                        if (resultSet != null) {
+                            while (resultSet.next()) {
+                                String startDateString = resultSet.getString("Start_Date");
+                                String endDateString = resultSet.getString("End_Date");
+
+                                List<Date> datesBetween = getDatesBetween(startDateString, endDateString);
+                                Calendar calendarnow = Calendar.getInstance();
+                                CalendarDay calendarDaynow = new CalendarDay(calendarnow);
+                                calendarDaynow.setBackgroundDrawable(DrawableUtils.getDayCircle(getActivity(), com.applandeo.materialcalendarview.R.color.defaultColor, android.R.color.transparent));
+                                events.add(calendarDaynow);
+
+                                @SuppressLint("SimpleDateFormat")
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                                Date startDate = dateFormat.parse(startDateString);
+                                Date endDate = dateFormat.parse(endDateString);
+
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.setTime(startDate);
+
+                                CalendarDay calendarDay = new CalendarDay(calendar);
+                                calendarDay.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(getContext(), ""));
+                                calendarDay.setLabelColor(R.color.white);
+                                events.add(calendarDay);
+
+                                Calendar calendar2 = Calendar.getInstance();
+                                calendar2.setTime(endDate);
+
+                                CalendarDay calendarDay2 = new CalendarDay(calendar2);
+                                calendarDay2.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(getContext(), ""));
+                                calendarDay2.setLabelColor(R.color.white);
+                                events.add(calendarDay2);
+
+                                for (Date date : datesBetween) {
+                                    Calendar calendar3 = Calendar.getInstance();
+                                    calendar3.setTime(date);
+                                    CalendarDay calendarDay3 = new CalendarDay(calendar3);
+                                    calendarDay3.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(getContext(), ""));
+                                    calendarDay3.setLabelColor(R.color.white);
+                                    events.add(calendarDay3);
+                                }
+                            }
+                        }
+                    } finally {
+                        connection.close();
+                    }
+                }
+            } catch (SQLException | ParseException e) {
+                e.printStackTrace();
+            }
+
+
+
+            return events;
+        }
+
+        @Override
+        protected void onPostExecute(List<CalendarDay> result) {
+            if (result != null && !result.isEmpty()) {
+                calendarView.setCalendarDays(result);
+            }
+        }
     }
 }

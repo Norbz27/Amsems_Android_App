@@ -5,7 +5,6 @@ import static android.content.Context.MODE_PRIVATE;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -18,22 +17,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-
-
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -47,21 +31,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
+import androidx.fragment.app.Fragment;
+
 import com.github.drjacky.imagepicker.ImagePicker;
-import com.github.drjacky.imagepicker.constant.ImageProvider;
 import com.google.android.material.navigation.NavigationView;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Objects;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -155,7 +145,7 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
             }
         });
 
-        sharedPreferences = Objects.requireNonNull(getActivity()).getSharedPreferences("stud_info", MODE_PRIVATE);
+        sharedPreferences = getActivity().getSharedPreferences("stud_info", MODE_PRIVATE);
         String studId = sharedPreferences.getString("studentID", null);
         studid = studId;
         getProfilePic(studId);
