@@ -38,6 +38,7 @@ public class LoginActivity extends AppCompatActivity {
         intent = new Intent(LoginActivity.this, NavigationActivity.class);
         if(sharedPreferences.contains("studentID") && sharedPreferences.contains("password")){
             startActivity(intent);
+            finish();
         }
 
 

@@ -77,6 +77,7 @@
         app:itemIconTint="@drawable/menu_item_text_color"
         app:itemTextColor="@drawable/menu_item_text_color"
         app:itemBackground="@drawable/menu_item_background"
+        app:itemVerticalPadding="10dp"
         android:background="@drawable/custom_drawable"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -3,55 +3,284 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingHorizontal="25dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginVertical="15dp"
     tools:context=".BalanceFragment">
-    <RelativeLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingTop="5dp"
+        android:paddingBottom="20dp"
+        android:paddingHorizontal="25dp">
         <RelativeLayout
-            android:id="@+id/r1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/round_square"
-            android:backgroundTint="#FFC107"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="15dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total Penalty Balance"
-                android:textColor="#202020"
-                android:fontFamily="@font/poppins_semibold"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PhP 400.00"
-                android:textColor="#202020"
-                android:gravity="right"
-                android:layout_alignParentRight="true"
-                android:fontFamily="@font/poppins_semibold"/>
-        </RelativeLayout>
-        <LinearLayout
-            android:id="@+id/l1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingVertical="10dp"
-            android:layout_marginTop="15dp"
-            android:elevation="3dp"
-            android:layout_below="@id/r1">
-            <TextView
+            android:layout_height="match_parent">
+            <RelativeLayout
+                android:id="@+id/r1"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Event Name"
-                android:gravity="center"/>
-        </LinearLayout>
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rec"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="3dp"
-            android:layout_below="@id/l1"/>
-    </RelativeLayout>
+                android:layout_height="wrap_content"
+                android:background="@drawable/round_square"
+                android:backgroundTint="#FFC107"
+                android:paddingVertical="10dp"
+                android:paddingHorizontal="15dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Penalty Balance"
+                    android:textColor="#202020"
+                    android:fontFamily="@font/poppins_semibold"/>
+
+                <TextView
+                    android:id="@+id/tvTotalPenBal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PhP 00"
+                    android:textColor="#202020"
+                    android:gravity="right"
+                    android:layout_alignParentRight="true"
+                    android:fontFamily="@font/poppins_semibold"/>
+            </RelativeLayout>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cvEventPen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/r1"
+                app:cardCornerRadius="8dp"
+                android:elevation="10dp"
+                android:layout_marginTop="15dp">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:id="@+id/l1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="10dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:text="Events Penalty"
+                            android:textColor="@color/darkblue"
+                            android:textSize="16dp"
+                            android:fontFamily="@font/poppins_semibold" />
+                    </LinearLayout>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/resEventsPen"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="15dp"
+                        android:layout_below="@id/l1"/>
+                    <RelativeLayout
+                        android:id="@+id/r2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/round_square"
+                        android:backgroundTint="#FFC107"
+                        android:paddingVertical="10dp"
+                        android:paddingHorizontal="15dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginHorizontal="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:layout_below="@id/resEventsPen">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Penalty"
+                            android:textColor="#202020"
+                            android:fontFamily="@font/poppins_semibold"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalPen"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PhP 00"
+                            android:textColor="#202020"
+                            android:gravity="right"
+                            android:layout_alignParentRight="true"
+                            android:fontFamily="@font/poppins_semibold"/>
+                    </RelativeLayout>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cvTransac"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/cvEventPen"
+                app:cardCornerRadius="8dp"
+                android:elevation="10dp"
+                android:layout_marginTop="15dp">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:id="@+id/l4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="10dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:text="Transaction History"
+                            android:textColor="@color/darkblue"
+                            android:textSize="16dp"
+                            android:fontFamily="@font/poppins_semibold" />
+                    </LinearLayout>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/resTransact"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="15dp"
+                        android:layout_below="@id/l4"/>
+                    <RelativeLayout
+                        android:id="@+id/r4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/round_square"
+                        android:backgroundTint="#FFC107"
+                        android:paddingVertical="10dp"
+                        android:paddingHorizontal="15dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginHorizontal="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:layout_below="@id/resTransact">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Payment"
+                            android:textColor="#202020"
+                            android:fontFamily="@font/poppins_semibold"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalPay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PhP 00"
+                            android:textColor="#202020"
+                            android:gravity="right"
+                            android:layout_alignParentRight="true"
+                            android:fontFamily="@font/poppins_semibold"/>
+                    </RelativeLayout>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cvTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/cvTransac"
+                app:cardCornerRadius="8dp"
+                android:elevation="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:id="@+id/l5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="10dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:text="Penalty Balance"
+                            android:textColor="@color/darkblue"
+                            android:textSize="16dp"
+                            android:fontFamily="@font/poppins_semibold" />
+                    </LinearLayout>
+                    <RelativeLayout
+                        android:id="@+id/resTotal1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/round_square"
+                        android:backgroundTint="#FFC107"
+                        android:paddingVertical="10dp"
+                        android:paddingHorizontal="15dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginHorizontal="15dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_below="@id/l5">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Penalty"
+                            android:textColor="#202020"
+                            android:fontFamily="@font/poppins_semibold"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalPen2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PhP 00"
+                            android:textColor="#202020"
+                            android:gravity="right"
+                            android:layout_alignParentRight="true"
+                            android:fontFamily="@font/poppins_semibold"/>
+                    </RelativeLayout>
+                    <RelativeLayout
+                        android:id="@+id/resTotal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/round_square"
+                        android:backgroundTint="#FFC107"
+                        android:paddingVertical="10dp"
+                        android:paddingHorizontal="15dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginHorizontal="15dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_below="@id/resTotal1">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Payment"
+                            android:textColor="#202020"
+                            android:fontFamily="@font/poppins_semibold"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalPay2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PhP 00"
+                            android:textColor="#202020"
+                            android:gravity="right"
+                            android:layout_alignParentRight="true"
+                            android:fontFamily="@font/poppins_semibold"/>
+                    </RelativeLayout>
+                    <RelativeLayout
+                        android:id="@+id/r5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/round_square"
+                        android:backgroundTint="@color/darkblue"
+                        android:paddingVertical="10dp"
+                        android:paddingHorizontal="15dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginHorizontal="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:layout_below="@id/resTotal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Balance"
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/poppins_semibold"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalPenBal2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PhP 00"
+                            android:textColor="@color/white"
+                            android:gravity="right"
+                            android:layout_alignParentRight="true"
+                            android:fontFamily="@font/poppins_semibold"/>
+                    </RelativeLayout>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+        </RelativeLayout>
+    </ScrollView>
 </FrameLayout>

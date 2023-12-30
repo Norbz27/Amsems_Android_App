@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="5dp">
+        <TextView
+            android:id="@+id/tvEventName2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Event Name"
+            android:textColor="#202020"
+            android:fontFamily="@font/poppins_semibold"/>
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30 Dec, 2023"
+            android:textColor="#202020"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_below="@id/tvEventName2"/>
+        <TextView
+            android:id="@+id/tvAmmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Php 100.00"
+            android:textColor="#202020"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:fontFamily="@font/poppins_regular"/>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>
