@@ -4,7 +4,6 @@ import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -17,6 +16,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -40,6 +40,7 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.fragment.app.Fragment;
 
+import com.example.amsems.utils.ALoadingDialog;
 import com.github.drjacky.imagepicker.ImagePicker;
 import com.google.android.material.navigation.NavigationView;
 
@@ -75,6 +76,9 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
     SharedPreferences sharedPreferences;
     Intent intent;
     Dialog dialog;
+    private byte[] imageData;
+    private String name, acad, dep, sec, prog, yearlvl, studID;
+    ALoadingDialog aLoadingDialog;
     private final ActivityResultLauncher<Intent> imagePickerLauncher=
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),(ActivityResult result)->{
                 if(result.getResultCode()==RESULT_OK){
@@ -138,6 +142,7 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
         tvName = view.findViewById(R.id.tvName);
         ImageButton btnEditpass = view.findViewById(R.id.btnEditPass);
 
+        aLoadingDialog = new ALoadingDialog(getActivity());
         profilePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -148,15 +153,10 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
         sharedPreferences = getActivity().getSharedPreferences("stud_info", MODE_PRIVATE);
         String studId = sharedPreferences.getString("studentID", null);
         studid = studId;
-        getProfilePic(studId);
+        aLoadingDialog.show();
+        new GetProfileTask().execute(studId);
 
         intent = new Intent(getActivity(), EditPassActivity.class);
-        //Bundle args = getArguments();
-        //if (args != null) {
-        //    String studId = args.getString("studId", null); // Replace -1 with a default value if needed
-        //    studid = studId;
-        //    getProfilePic(studId);
-        //}
 
         btnEditpass.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -306,64 +306,78 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
             return null;
         }
     }
-    @SuppressLint("SetTextI18n")
-    private void getProfilePic(String id) {
-        byte[] imageData = null;
-        String name, acad, dep, sec, prog, yearlvl, studid;
-        Context context = getActivity();
-        try {
-            Connection connection = SQL_Connection.connectionClass();
-
-            String query = "SELECT ID , Profile_pic,UPPER(Firstname + ' ' + Middlename + ' ' + Lastname) Name, Academic_Level_Description, d.Description Dep, se.Description Sec, p.Description Prog, y.Description Ylvl FROM tbl_student_accounts sa LEFT JOIN tbl_Departments d ON sa.Department = d.Department_ID LEFT JOIN tbl_academic_level al ON d.AcadLevel_ID = al.Academic_Level_ID LEFT JOIN tbl_Section se ON sa.Section = se.Section_ID LEFT JOIN tbl_program p ON sa.Program = p.Program_ID LEFT JOIN tbl_year_level y ON sa.Year_Level = y.Level_ID WHERE ID=?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, id);
-
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        imageData = resultSet.getBytes("Profile_pic");
-                        name = resultSet.getString("Name");
-                        acad = resultSet.getString("Academic_Level_Description");
-                        dep = resultSet.getString("Dep");
-                        sec = resultSet.getString("Sec");
-                        prog = resultSet.getString("Prog");
-                        yearlvl = resultSet.getString("Ylvl");
-                        studid = resultSet.getString("ID");
-
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
-
-                        if (bitmap != null) {
-                            // Get the circular background drawable
-                            Drawable circularDrawable = ContextCompat.getDrawable(context, R.drawable.circle_profile);
-
-                            // Combine the circular background with the profile picture
-                            RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-                            roundedBitmapDrawable.setCircular(true);
-
-                            // Set the combined drawable to the ImageButton
-                            profilePic.setImageDrawable(roundedBitmapDrawable);
-                        } else {
-                            // Handle the case where the Bitmap is null (no image data)
-                            profilePic.setImageResource(R.mipmap.ic_profile);
-                        }
-
-                        tvName.setText(name);
-                        tvDep.setText("Department: "+dep);
-                        tvAcad.setText("Academic Level: "+acad);
-                        tvSec.setText("Section: "+sec);
-                        tvYearlvl.setText("Year Level: "+yearlvl);
-                        tvProg.setText("Program: "+prog);
-                        tvStudId.setText("Student ID: "+studid);
-
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            Log.e(TAG, "SQL Exception: " + e.getMessage());
-        }
-    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         return true;
+    }
+    private class GetProfileTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            Context context = getActivity();
+            String id = params[0];
+
+            try {
+                Connection connection = SQL_Connection.connectionClass();
+
+                String query = "SELECT ID , Profile_pic,UPPER(Firstname + ' ' + Middlename + ' ' + Lastname) Name, Academic_Level_Description, d.Description Dep, se.Description Sec, p.Description Prog, y.Description Ylvl FROM tbl_student_accounts sa LEFT JOIN tbl_Departments d ON sa.Department = d.Department_ID LEFT JOIN tbl_academic_level al ON d.AcadLevel_ID = al.Academic_Level_ID LEFT JOIN tbl_Section se ON sa.Section = se.Section_ID LEFT JOIN tbl_program p ON sa.Program = p.Program_ID LEFT JOIN tbl_year_level y ON sa.Year_Level = y.Level_ID WHERE ID=?";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    preparedStatement.setString(1, id);
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        if (resultSet.next()) {
+                            imageData = resultSet.getBytes("Profile_pic");
+                            name = resultSet.getString("Name");
+                            acad = resultSet.getString("Academic_Level_Description");
+                            dep = resultSet.getString("Dep");
+                            sec = resultSet.getString("Sec");
+                            prog = resultSet.getString("Prog");
+                            yearlvl = resultSet.getString("Ylvl");
+                            studID = resultSet.getString("ID");
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                Log.e(TAG, "SQL Exception: " + e.getMessage());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            // Update UI with the retrieved data
+            updateUI();
+        }
+    }
+
+    private void updateUI() {
+        Context context = getActivity();
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+
+        if (bitmap != null) {
+            // Get the circular background drawable
+            Drawable circularDrawable = ContextCompat.getDrawable(context, R.drawable.circle_profile);
+
+            // Combine the circular background with the profile picture
+            RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+            roundedBitmapDrawable.setCircular(true);
+
+            // Set the combined drawable to the ImageButton
+            profilePic.setImageDrawable(roundedBitmapDrawable);
+        } else {
+            // Handle the case where the Bitmap is null (no image data)
+            profilePic.setImageResource(R.mipmap.ic_profile);
+        }
+
+        tvName.setText(name);
+        tvDep.setText("Department: " + dep);
+        tvAcad.setText("Academic Level: " + acad);
+        tvSec.setText("Section: " + sec);
+        tvYearlvl.setText("Year Level: " + yearlvl);
+        tvProg.setText("Program: " + prog);
+        tvStudId.setText("Student ID: " + studID);
+        aLoadingDialog.cancel();
     }
 }

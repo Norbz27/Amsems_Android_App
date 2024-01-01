@@ -121,9 +121,6 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             case R.id.nav_balance:
                 getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new BalanceFragment()).commit();
                 break;
-            case R.id.nav_settings:
-                getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new SettingsFragment()).commit();
-                break;
             case R.id.nav_logout:
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.clear();

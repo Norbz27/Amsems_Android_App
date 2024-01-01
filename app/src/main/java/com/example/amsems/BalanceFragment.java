@@ -5,6 +5,7 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.amsems.utils.ALoadingDialog;
 import com.example.amsems.utils.EventPenaltyAdapter;
 import com.example.amsems.utils.TransactionHisAdapter;
 
@@ -46,6 +48,7 @@ public class BalanceFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private ALoadingDialog aLoadingDialog;
 
     public BalanceFragment() {
         // Required empty public constructor
@@ -105,12 +108,28 @@ public class BalanceFragment extends Fragment {
         _studID = new ArrayList<>();
         _payedAmmount = new ArrayList<>();
         _payedDate = new ArrayList<>();
-
-        displayTotalBalance(studentId);
+        aLoadingDialog = new ALoadingDialog(getActivity());
+        aLoadingDialog.show();
+        new DisplayUpcomingEventsTask().execute(studentId);
 
         displayEventPenalty(studentId);
         displayTransaction(studentId);
         return view;
+    }
+    private class DisplayUpcomingEventsTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... params) {
+            String id = params[0];
+            displayTotalBalance(id);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            // Update UI after executing the task
+            aLoadingDialog.cancel();
+        }
     }
     public void displayTransaction(String studId){
         try {

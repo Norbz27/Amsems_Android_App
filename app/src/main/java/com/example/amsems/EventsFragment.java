@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.applandeo.materialcalendarview.CalendarDay;
 import com.applandeo.materialcalendarview.CalendarView;
+import com.example.amsems.utils.ALoadingDialog;
 import com.example.amsems.utils.DisplayEventDataAsyncTask;
 import com.example.amsems.utils.DrawableUtils;
 import com.example.amsems.utils.EventRecyclerViewInterface;
@@ -49,6 +50,8 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
     RecyclerView recyclerView;
     ArrayList<String> _name, _date, _color, _id;
     Date selectedDate;
+    private ALoadingDialog aLoadingDialog;
+
     public EventsFragment() {
         // Required empty public constructor
     }
@@ -85,7 +88,7 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_events, container, false);
-
+        aLoadingDialog = new ALoadingDialog(getActivity());
         calendarView = view.findViewById(R.id.calendarView);
         recyclerView = view.findViewById(R.id.rcview);
 
@@ -95,7 +98,7 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
         _date = new ArrayList<>();
         _color = new ArrayList<>();
         _id = new ArrayList<>();
-
+        aLoadingDialog.show();
         new GetEventDatesAsyncTask().execute();
 
         Date now = new Date();
@@ -216,6 +219,7 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
             if (result != null && !result.isEmpty()) {
                 calendarView.setCalendarDays(result);
             }
+            aLoadingDialog.cancel();
         }
     }
 }
