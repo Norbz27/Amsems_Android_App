@@ -2,8 +2,11 @@ package com.example.amsems;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -17,23 +20,38 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.amsems.utils.NotificationHelper;
 import com.google.android.material.navigation.NavigationView;
+import com.pusher.client.Pusher;
+import com.pusher.client.PusherOptions;
+import com.pusher.client.channel.Channel;
+import com.pusher.client.channel.PusherEvent;
+import com.pusher.client.channel.SubscriptionEventListener;
+import com.pusher.client.connection.ConnectionEventListener;
+import com.pusher.client.connection.ConnectionState;
+import com.pusher.client.connection.ConnectionStateChange;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 public class NavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private ImageButton profilePic;
+    private ImageButton profilePic, btnNotification;
+    private static final int Ann_NOTIFICATION_ID = 1;
     private DrawerLayout drawerLayout;
     SharedPreferences sharedPreferences;
     Intent intent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +63,7 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         String studentId = sharedPreferences.getString("studentID", "null");
 
         profilePic = findViewById(R.id.btnProfile);
-
+        btnNotification = findViewById(R.id.btnNotification);
 
         byte[] imageData = getProfilePic(studentId);
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
@@ -76,7 +94,7 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         drawerLayout.addDrawerListener(toogle);
         toogle.syncState();
 
-        if(savedInstanceState == null){
+        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new HomeFragment()).commit();
             navigationView.setCheckedItem(R.id.nav_home);
         }
@@ -87,7 +105,103 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                 getSupportFragmentManager().beginTransaction().replace(R.id.framelayout, new ProfileFragment()).commit();
             }
         });
+        btnNotification.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(NavigationActivity.this, NotificationActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        PusherOptions options = new PusherOptions();
+        options.setCluster("ap1");
+
+        Pusher pusher = new Pusher("6cc843a774ea227a754f", options);
+
+        pusher.connect(new ConnectionEventListener() {
+            @Override
+            public void onConnectionStateChange(ConnectionStateChange change) {
+                Log.i("Pusher", "State changed from " + change.getPreviousState() +
+                        " to " + change.getCurrentState());
+            }
+
+            @Override
+            public void onError(String message, String code, Exception e) {
+                Log.i("Pusher", "There was a problem connecting! " +
+                        "\ncode: " + code +
+                        "\nmessage: " + message +
+                        "\nException: " + e
+                );
+            }
+        }, ConnectionState.ALL);
+
+        Channel channel = pusher.subscribe("amsems");
+
+        channel.bind("notification", new SubscriptionEventListener() {
+            @Override
+            public void onEvent(PusherEvent event) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Connection connection = SQL_Connection.connectionClass();
+
+                            if (connection != null) {
+                                String query = "SELECT Announcement_Title, Date_Time FROM tbl_Announcement ORDER BY Date_Time DESC";
+                                try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                                     ResultSet resultSet = preparedStatement.executeQuery()) {
+                                    if (resultSet.next()) {
+                                        String title = resultSet.getString("Announcement_Title");
+                                        notification(title);
+                                    }
+                                } finally {
+                                    connection.close();
+                                }
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+            }
+        });
+
     }
+
+    public void notification(String title) {
+        Context context = this;
+
+        // Create the notification channel
+        NotificationHelper.createNotificationChannel(context);
+
+        // Create an intent to launch when the notification is clicked
+        Intent intent = new Intent(context, NotificationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Create and display the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationHelper.CHANNEL_ID)
+                .setContentTitle("Announcement")
+                .setContentText(title)
+                .setSmallIcon(R.drawable.baseline_notifications_24)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true); // Automatically removes the notification when clicked
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        notificationManager.notify(Ann_NOTIFICATION_ID, builder.build());
+    }
+
     private byte[] getProfilePic(String id) {
         byte[] defaultProfile = null;
 

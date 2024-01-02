@@ -16,6 +16,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.example.amsems.utils.ALoadingDialog;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,6 +31,7 @@ public class EventInfoActivity extends AppCompatActivity {
     TextView tvName, tvPenalty, tvAudience, tvAttendance;
     EditText edStart, edEnd, edDes;
     ImageView ivEvent;
+    ALoadingDialog aLoadingDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +46,8 @@ public class EventInfoActivity extends AppCompatActivity {
         tvAudience = findViewById(R.id.tvAudience);
         ivEvent = findViewById(R.id.ivEvent);
 
+        aLoadingDialog = new ALoadingDialog(this);
+
         Toolbar toolbar = findViewById(R.id.toolbarEventInfo);
         setSupportActionBar(toolbar);
 
@@ -53,6 +58,7 @@ public class EventInfoActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String eventid = intent.getStringExtra("EventID");
 
+        aLoadingDialog.show();
         new DisplayAsyncTask().execute(eventid);
 
     }
@@ -132,6 +138,7 @@ public class EventInfoActivity extends AppCompatActivity {
             } else {
                 tvPenalty.setText("No");
             }
+            aLoadingDialog.cancel();
         }
     }
 

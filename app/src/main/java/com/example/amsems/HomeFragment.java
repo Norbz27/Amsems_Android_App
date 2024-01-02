@@ -52,6 +52,9 @@ public class HomeFragment extends Fragment {
     TextView tvTotalBal, tvDep;
     SharedPreferences sharedPreferences;
     ALoadingDialog aLoadingDialog;
+    private String rembalformattedValue;
+    private String dep;
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -106,20 +109,17 @@ public class HomeFragment extends Fragment {
         String studentId = sharedPreferences.getString("studentID", "null");
 
         aLoadingDialog.show();
-        displayTotalBalance(studentId);
-        new DisplayUpcomingEventsTask().execute();
 
-        UpCommingEventAdapter eventAdapter = new UpCommingEventAdapter(getActivity(), _id, _name, _date, _image);
-        recEvents.setAdapter(eventAdapter);
-        recEvents.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-        eventAdapter.notifyDataSetChanged();
+        new DisplayUpcomingEventsTask().execute(studentId);
 
         return view;
     }
-    private class DisplayUpcomingEventsTask extends AsyncTask<Void, Void, Void> {
+    private class DisplayUpcomingEventsTask extends AsyncTask<String, Void, Void> {
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(String... params) {
+            String studentId = params[0];
+            displayTotalBalance(studentId);
             displayUpcomingEvents();
             return null;
         }
@@ -131,7 +131,9 @@ public class HomeFragment extends Fragment {
                 UpCommingEventAdapter eventAdapter = new UpCommingEventAdapter(getActivity(), _id, _name, _date, _image);
                 recEvents.setAdapter(eventAdapter);
                 recEvents.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-                eventAdapter.notifyDataSetChanged();
+
+                tvTotalBal.setText("Php "+rembalformattedValue);
+                tvDep.setText(dep);
             }
             aLoadingDialog.cancel();
         }
@@ -149,12 +151,9 @@ public class HomeFragment extends Fragment {
                     if (resultSet.next()) {
                         // Extract data from the result set
                         double remainingBalance = resultSet.getDouble("Total_balance_fee");
-                        String dep = resultSet.getString("Description");
+                        dep = resultSet.getString("Description");
 
-                        String rembalformattedValue = String.format("%.2f", remainingBalance);
-
-                        tvTotalBal.setText("Php "+rembalformattedValue);
-                        tvDep.setText(dep);
+                        rembalformattedValue = String.format("%.2f", remainingBalance);
                     }
                 }
             }

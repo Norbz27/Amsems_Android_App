@@ -49,7 +49,9 @@ public class BalanceFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private ALoadingDialog aLoadingDialog;
-
+    String balfeeformattedValue;
+    String payamformattedValue;
+    String rembalformattedValue;
     public BalanceFragment() {
         // Required empty public constructor
     }
@@ -112,22 +114,39 @@ public class BalanceFragment extends Fragment {
         aLoadingDialog.show();
         new DisplayUpcomingEventsTask().execute(studentId);
 
-        displayEventPenalty(studentId);
-        displayTransaction(studentId);
+
+
         return view;
     }
     private class DisplayUpcomingEventsTask extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... params) {
-            String id = params[0];
-            displayTotalBalance(id);
+            String studentId = params[0];
+            displayTransaction(studentId);
+            displayEventPenalty(studentId);
+            displayTotalBalance(studentId);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             // Update UI after executing the task
+            TransactionHisAdapter transactionAdapter = new TransactionHisAdapter(getActivity(), _studID, _payedDate, _payedAmmount);
+            resTransact.setAdapter(transactionAdapter);
+            resTransact.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+            EventPenaltyAdapter eventPenaltyAdapter = new EventPenaltyAdapter(getActivity(), _id, _name, _date, _ammount);
+            resEventsPen.setAdapter(eventPenaltyAdapter);
+            resEventsPen.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+            tvTotalPenBal.setText("Php "+rembalformattedValue);
+            tvTotalPen.setText("Php "+balfeeformattedValue);
+            tvTotalPay.setText("Php "+payamformattedValue);
+            tvTotalPenBal2.setText("Php "+rembalformattedValue);
+            tvTotalPen2.setText("Php "+balfeeformattedValue);
+            tvTotalPay2.setText("Php "+payamformattedValue);
+
             aLoadingDialog.cancel();
         }
     }
@@ -156,9 +175,7 @@ public class BalanceFragment extends Fragment {
                         _payedDate.add(dateformatted);
                         _payedAmmount.add("Php "+balfeeformattedValue);
 
-                        TransactionHisAdapter eventPenaltyAdapter = new TransactionHisAdapter(getActivity(), _studID, _payedDate, _payedAmmount);
-                        resTransact.setAdapter(eventPenaltyAdapter);
-                        resTransact.setLayoutManager(new LinearLayoutManager(getActivity()));
+
                     }
                 }
             }
@@ -214,9 +231,7 @@ public class BalanceFragment extends Fragment {
                         _date.add(dateformatted);
                         _ammount.add("Php "+balfeeformattedValue);
 
-                        EventPenaltyAdapter eventPenaltyAdapter = new EventPenaltyAdapter(getActivity(), _id, _name, _date, _ammount);
-                        resEventsPen.setAdapter(eventPenaltyAdapter);
-                        resEventsPen.setLayoutManager(new LinearLayoutManager(getActivity()));
+
                     }
                 }
             }
@@ -274,16 +289,11 @@ public class BalanceFragment extends Fragment {
                         double totalPaymentAmount = resultSet.getDouble("Total_Payment_Amount");
                         double remainingBalance = resultSet.getDouble("Remaining_Balance");
 
-                        String balfeeformattedValue = String.format("%.2f", totalBalanceFee);
-                        String payamformattedValue = String.format("%.2f", totalPaymentAmount);
-                        String rembalformattedValue = String.format("%.2f", remainingBalance);
+                        balfeeformattedValue = String.format("%.2f", totalBalanceFee);
+                        payamformattedValue = String.format("%.2f", totalPaymentAmount);
+                        rembalformattedValue = String.format("%.2f", remainingBalance);
 
-                        tvTotalPenBal.setText("Php "+rembalformattedValue);
-                        tvTotalPen.setText("Php "+balfeeformattedValue);
-                        tvTotalPay.setText("Php "+payamformattedValue);
-                        tvTotalPenBal2.setText("Php "+rembalformattedValue);
-                        tvTotalPen2.setText("Php "+balfeeformattedValue);
-                        tvTotalPay2.setText("Php "+payamformattedValue);
+
                     }
                 }
             }

@@ -9,4 +9,5 @@
     <string name="edit">edit</string>
 
     <string name="changePrf_button_text"><font size="15">Change Profile Picture</font>\n<font style="normal" size="9">Upload a PNG or JPG Image</font></string>
+    <string name="empty" />
 </resources>

@@ -177,7 +177,7 @@
                     android:id="@+id/tvAudience"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="All Student"
+                    android:text="@string/empty"
                     android:textSize="16sp"
                     android:layout_marginStart="40dp"
                     android:fontFamily="@font/poppins_regular"/>
@@ -203,7 +203,7 @@
                     android:id="@+id/tvAttendance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Required"
+                    android:text="@string/empty"
                     android:textSize="16sp"
                     android:layout_marginStart="25dp"
                     android:fontFamily="@font/poppins_regular"/>
@@ -227,7 +227,7 @@
                     android:id="@+id/tvPenalty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Yes"
+                    android:text="@string/empty"
                     android:textSize="16sp"
                     android:layout_marginStart="55dp"
                     android:fontFamily="@font/poppins_regular"/>
