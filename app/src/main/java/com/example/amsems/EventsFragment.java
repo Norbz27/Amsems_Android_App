@@ -142,7 +142,6 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
     public void onEventClick(int position, String eventid) {
         Intent intent = new Intent(getActivity(), EventInfoActivity.class);
         intent.putExtra("EventID", eventid);
-        //Toast.makeText(getActivity(), eventid, Toast.LENGTH_SHORT).show();
         startActivity(intent);
     }
 

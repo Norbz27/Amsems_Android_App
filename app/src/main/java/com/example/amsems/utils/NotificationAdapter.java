@@ -19,13 +19,15 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.MyViewHolder> {
+    private NotificationRecyclerViewInterface nrvi;
     private Context context;
     private ArrayList _headerTitle, _title, _date;
-    public NotificationAdapter(Context context, ArrayList _headerTitle, ArrayList _title, ArrayList _date){
+    public NotificationAdapter(Context context, ArrayList _headerTitle, ArrayList _title, ArrayList _date, NotificationRecyclerViewInterface nrvi){
         this.context = context;
         this._headerTitle = _headerTitle;
         this._title = _title;
         this._date = _date;
+        this.nrvi = nrvi;
     }
     @NonNull
     @Override
@@ -43,9 +45,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         String givenDateString = String.valueOf(_date.get(position));
         // Parse the given date string to Date object
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
         Date givenDate = null;
         try {
             givenDate = dateFormat.parse(givenDateString);
+            holder.datetime = String.valueOf(givenDate);
+            holder.hdTitle = String.valueOf(_headerTitle.get(position));
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -79,12 +84,26 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public class MyViewHolder extends RecyclerView.ViewHolder {
         TextView tvHtitle, tvTitle, tvDatetime;
         ImageView imageView;
+        String datetime, hdTitle;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             tvHtitle = itemView.findViewById(R.id.tvNotify);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvDatetime = itemView.findViewById(R.id.tvDate);
             imageView = itemView.findViewById(R.id.imageViewLetter);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(nrvi != null){
+                        int position = getAdapterPosition();
+
+                        if(position != RecyclerView.NO_POSITION){
+                            nrvi.onEventClick(position, datetime, hdTitle);
+                        }
+                    }
+                }
+            });
         }
     }
 }

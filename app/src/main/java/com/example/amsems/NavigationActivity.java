@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -168,12 +169,13 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         return false;
     }
     public void pusher3(){
-        channel.bind("absentieesm", new SubscriptionEventListener() {
+        channel.bind(studentId, new SubscriptionEventListener() {
             @Override
             public void onEvent(PusherEvent event) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Toast.makeText(NavigationActivity.this, event.getData(), Toast.LENGTH_SHORT).show();
                         try {
                             Connection connection = SQL_Connection.connectionClass();
 
@@ -184,11 +186,11 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                                         if (resultSet.next()) {
                                             String name = resultSet.getString("Name");
-                                            String studid = '"'+studentId+'"';
                                             String message = name + " you are called to the guidance office, regarding your absences.";
-                                            if(studid.equals(event.getData())) {
-                                                notification4(message);
-                                            }
+                                            String datetime = event.getData().replace("\"", "");
+
+                                            notification4(message, "Guidance", datetime);
+
                                         }
                                     }
                                 } finally {
@@ -265,7 +267,8 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                                      ResultSet resultSet = preparedStatement.executeQuery()) {
                                     if (resultSet.next()) {
                                         String title = resultSet.getString("Announcement_Title");
-                                        notification(title);
+                                        String datetime = resultSet.getString("Date_Time");
+                                        notification(title, "Announcement", datetime);
                                     }
                                 } finally {
                                     connection.close();
@@ -279,14 +282,16 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             }
         });
     }
-    public void notification(String title) {
+    public void notification(String title, String hdTitle, String datetime) {
         Context context = this;
 
         // Create the notification channel
         NotificationHelper.createNotificationChannel(context);
 
         // Create an intent to launch when the notification is clicked
-        Intent intent = new Intent(context, NotificationActivity.class);
+        Intent intent = new Intent(context, NotificationDetailActivity.class);
+        intent.putExtra("DateTime", datetime);
+        intent.putExtra("Header", hdTitle);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -376,14 +381,16 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         }
         notificationManager.notify(3, builder.build());
     }
-    public void notification4(String title) {
+    public void notification4(String title, String hdTitle, String datetime) {
         Context context = this;
 
         // Create the notification channel
         NotificationHelper.createNotificationChannel(context);
 
         // Create an intent to launch when the notification is clicked
-        Intent intent = new Intent(context, NotificationActivity.class);
+        Intent intent = new Intent(context, NotificationDetailActivity.class);
+        intent.putExtra("DateTime", datetime);
+        intent.putExtra("Header", hdTitle);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

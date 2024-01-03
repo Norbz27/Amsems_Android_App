@@ -1,5 +1,6 @@
 package com.example.amsems;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.amsems.utils.ALoadingDialog;
 import com.example.amsems.utils.NotificationAdapter;
+import com.example.amsems.utils.NotificationRecyclerViewInterface;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.Channel;
@@ -32,9 +34,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
-public class NotificationActivity extends AppCompatActivity {
+public class NotificationActivity extends AppCompatActivity implements NotificationRecyclerViewInterface {
     ArrayList<String> _headerTitle, _title, _date;
     RecyclerView recNotifications;
     ALoadingDialog aLoadingDialog;
@@ -131,7 +134,7 @@ public class NotificationActivity extends AppCompatActivity {
         });
     }
     public void pusher3(){
-        channel.bind("absentieesm", new SubscriptionEventListener() {
+        channel.bind(studentId, new SubscriptionEventListener() {
             @Override
             public void onEvent(PusherEvent event) {
                 runOnUiThread(new Runnable() {
@@ -146,6 +149,25 @@ public class NotificationActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    public void onEventClick(int position, String datetime, String hdTitle) {
+        if(hdTitle.equals("Announcement") || hdTitle.equals("Guidance")) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+            Date givenDate = null;
+            try {
+                givenDate = dateFormat.parse(datetime);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            SimpleDateFormat dbdateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Intent intent = new Intent(this, NotificationDetailActivity.class);
+            intent.putExtra("DateTime", dbdateFormat.format(givenDate));
+            intent.putExtra("Header", hdTitle);
+            startActivity(intent);
+        }
+    }
+
     private class DisplayNotificationTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -162,7 +184,7 @@ public class NotificationActivity extends AppCompatActivity {
             // Sort the data by date_time
             sortDataByDate();
 
-            NotificationAdapter eventAdapter = new NotificationAdapter(NotificationActivity.this, _headerTitle, _title, _date);
+            NotificationAdapter eventAdapter = new NotificationAdapter(NotificationActivity.this, _headerTitle, _title, _date, NotificationActivity.this);
             recNotifications.setAdapter(eventAdapter);
             recNotifications.setLayoutManager(new LinearLayoutManager(NotificationActivity.this));
             aLoadingDialog.cancel();
