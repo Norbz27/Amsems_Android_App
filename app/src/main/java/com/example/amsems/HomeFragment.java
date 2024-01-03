@@ -130,8 +130,9 @@ public class HomeFragment extends Fragment {
             if (!getActivity().isFinishing()) {
                 UpCommingEventAdapter eventAdapter = new UpCommingEventAdapter(getActivity(), _id, _name, _date, _image);
                 recEvents.setAdapter(eventAdapter);
-                recEvents.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-
+                LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
+                recEvents.setLayoutManager(layoutManager);
+                Log.e("Count Event: ", String.valueOf(eventAdapter.getItemCount()));
                 tvTotalBal.setText("Php "+rembalformattedValue);
                 tvDep.setText(dep);
             }
@@ -164,7 +165,7 @@ public class HomeFragment extends Fragment {
     public void displayUpcomingEvents() {
         try {
             Connection connection = SQL_Connection.connectionClass();
-            String query = "SELECT Event_ID, Event_Name, Start_Date, Image FROM tbl_events WHERE Start_Date >= GETDATE()";
+            String query = "SELECT Event_ID, Event_Name, Start_Date, Image FROM tbl_events WHERE Start_Date >= GETDATE() ORDER BY Start_Date ASC";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
 

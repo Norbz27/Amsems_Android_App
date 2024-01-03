@@ -30,6 +30,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.amsems.utils.NotificationHelper;
+import com.example.amsems.utils.ProfileRefreshListener;
 import com.google.android.material.navigation.NavigationView;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
@@ -45,13 +46,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class NavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class NavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ProfileRefreshListener {
     private ImageButton profilePic, btnNotification;
     private static final int Ann_NOTIFICATION_ID = 1;
     private DrawerLayout drawerLayout;
     SharedPreferences sharedPreferences;
     Intent intent;
-
+    String studentId;
+    Channel channel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,28 +62,36 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         sharedPreferences = getSharedPreferences("stud_info", MODE_PRIVATE);
 
 
-        String studentId = sharedPreferences.getString("studentID", "null");
+        studentId = sharedPreferences.getString("studentID", "null");
 
         profilePic = findViewById(R.id.btnProfile);
         btnNotification = findViewById(R.id.btnNotification);
 
-        byte[] imageData = getProfilePic(studentId);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+        PusherOptions options = new PusherOptions();
+        options.setCluster("ap1");
 
-        if (bitmap != null) {
-            // Get the circular background drawable
-            Drawable circularDrawable = ContextCompat.getDrawable(this, R.drawable.circle_profile);
+        Pusher pusher = new Pusher("6cc843a774ea227a754f", options);
 
-            // Combine the circular background with the profile picture
-            RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-            roundedBitmapDrawable.setCircular(true);
+        pusher.connect(new ConnectionEventListener() {
+            @Override
+            public void onConnectionStateChange(ConnectionStateChange change) {
+                Log.i("Pusher", "State changed from " + change.getPreviousState() +
+                        " to " + change.getCurrentState());
+            }
 
-            // Set the combined drawable to the ImageButton
-            profilePic.setImageDrawable(roundedBitmapDrawable);
-        } else {
-            // Handle the case where the Bitmap is null (no image data)
-            profilePic.setImageResource(R.mipmap.ic_profile);
-        }
+            @Override
+            public void onError(String message, String code, Exception e) {
+                Log.i("Pusher", "There was a problem connecting! " +
+                        "\ncode: " + code +
+                        "\nmessage: " + message +
+                        "\nException: " + e
+                );
+            }
+        }, ConnectionState.ALL);
+
+        channel = pusher.subscribe("amsems");
+
+        displayProf();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -113,30 +123,133 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             }
         });
 
-        PusherOptions options = new PusherOptions();
-        options.setCluster("ap1");
 
-        Pusher pusher = new Pusher("6cc843a774ea227a754f", options);
+    }
+    public void displayProf(){
+        byte[] imageData = getProfilePic(studentId);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
 
-        pusher.connect(new ConnectionEventListener() {
-            @Override
-            public void onConnectionStateChange(ConnectionStateChange change) {
-                Log.i("Pusher", "State changed from " + change.getPreviousState() +
-                        " to " + change.getCurrentState());
+        if (bitmap != null) {
+            // Get the circular background drawable
+            Drawable circularDrawable = ContextCompat.getDrawable(this, R.drawable.circle_profile);
+
+            // Combine the circular background with the profile picture
+            RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+            roundedBitmapDrawable.setCircular(true);
+
+            // Set the combined drawable to the ImageButton
+            profilePic.setImageDrawable(roundedBitmapDrawable);
+            pusher1();
+            pusher2();
+            pusher3();
+        } else {
+            // Handle the case where the Bitmap is null (no image data)
+            profilePic.setImageResource(R.mipmap.ic_profile);
+        }
+    }
+    private boolean isEventForSpecificStudents(String eventId) {
+        try (Connection cn = SQL_Connection.connectionClass();
+             PreparedStatement stmt = cn.prepareStatement("SELECT Exclusive FROM tbl_events WHERE Event_ID = ? OR ? IS NULL")) {
+
+            cn.setAutoCommit(true); // Optional, depending on your requirements
+            stmt.setObject(1, eventId != null ? eventId : null);
+            stmt.setObject(2, eventId != null ? eventId : null);
+
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                if (resultSet.next()) {
+                    Object result = resultSet.getObject("Exclusive");
+                    return result != null && result.toString().equals("Specific Students");
+                }
             }
 
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
+        }
+        return false;
+    }
+    public void pusher3(){
+        channel.bind("absentieesm", new SubscriptionEventListener() {
             @Override
-            public void onError(String message, String code, Exception e) {
-                Log.i("Pusher", "There was a problem connecting! " +
-                        "\ncode: " + code +
-                        "\nmessage: " + message +
-                        "\nException: " + e
-                );
+            public void onEvent(PusherEvent event) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Connection connection = SQL_Connection.connectionClass();
+
+                            if (connection != null) {
+                                String query = "SELECT UPPER(Lastname+', ' + Firstname+' '+Middlename) AS Name FROM tbl_student_accounts WHERE ID = ?";
+                                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                                    preparedStatement.setString(1, studentId);
+                                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                        if (resultSet.next()) {
+                                            String name = resultSet.getString("Name");
+                                            String studid = '"'+studentId+'"';
+                                            String message = name + " you are called to the guidance office, regarding your absences.";
+                                            if(studid.equals(event.getData())) {
+                                                notification4(message);
+                                            }
+                                        }
+                                    }
+                                } finally {
+                                    connection.close();
+                                }
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
-        }, ConnectionState.ALL);
+        });
+    }
+    public void pusher2(){
+        channel.bind("events", new SubscriptionEventListener() {
+            @Override
+            public void onEvent(PusherEvent event) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Connection connection = SQL_Connection.connectionClass();
+                            String eventID = null;
+                            if (connection != null) {
+                                String query = "SELECT TOP 1 Event_ID, Event_Name, Date_Time FROM tbl_events ORDER BY Date_Time DESC";
+                                try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                                     ResultSet resultSet = preparedStatement.executeQuery()) {
+                                    if (resultSet.next()) {
+                                        String title = resultSet.getString("Event_Name");
+                                        eventID = resultSet.getString("Event_ID");
+                                        notification2(eventID, title);
+                                    }
+                                }
+                                Log.e("Event: ", String.valueOf(isEventForSpecificStudents(eventID)));
+                                if(isEventForSpecificStudents(eventID)){
+                                    String query2 = "SELECT e.Event_ID, e.Event_Name, s.ID AS id FROM tbl_events e LEFT JOIN tbl_student_accounts s ON CHARINDEX(s.FirstName + ' ' + s.LastName, e.Specific_Students) > 0 OR CHARINDEX(s.LastName + ' ' + s.FirstName, e.Specific_Students) > 0 LEFT JOIN tbl_departments d ON s.Department = d.Department_ID WHERE e.Exclusive = 'Specific Students' AND s.ID = ? ORDER BY e.Date_Time DESC";
+                                    try (PreparedStatement preparedStatement = connection.prepareStatement(query2)) {
+                                        preparedStatement.setString(1, studentId);
 
-        Channel channel = pusher.subscribe("amsems");
+                                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                            if (resultSet.next()) {
+                                                String title = resultSet.getString("Event_Name");
+                                                notification3(title);
+                                            }
+                                        }
+                                    } finally {
+                                        connection.close();
+                                    }
+                                }
+                            }
 
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+    }
+    public void pusher1(){
         channel.bind("notification", new SubscriptionEventListener() {
             @Override
             public void onEvent(PusherEvent event) {
@@ -147,7 +260,7 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                             Connection connection = SQL_Connection.connectionClass();
 
                             if (connection != null) {
-                                String query = "SELECT Announcement_Title, Date_Time FROM tbl_Announcement ORDER BY Date_Time DESC";
+                                String query = "SELECT TOP 1 Announcement_Title, Date_Time FROM tbl_Announcement ORDER BY Date_Time DESC";
                                 try (PreparedStatement preparedStatement = connection.prepareStatement(query);
                                      ResultSet resultSet = preparedStatement.executeQuery()) {
                                     if (resultSet.next()) {
@@ -161,14 +274,11 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
-
                     }
                 });
             }
         });
-
     }
-
     public void notification(String title) {
         Context context = this;
 
@@ -201,7 +311,104 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         }
         notificationManager.notify(Ann_NOTIFICATION_ID, builder.build());
     }
+    public void notification2(String eventID,String title) {
+        Context context = this;
 
+        // Create the notification channel
+        NotificationHelper.createNotificationChannel(context);
+
+        // Create an intent to launch when the notification is clicked
+        Intent intent = new Intent(context, EventInfoActivity.class);
+        intent.putExtra("EventID", eventID);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Create and display the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationHelper.CHANNEL_ID)
+                .setContentTitle("Event")
+                .setContentText(title)
+                .setSmallIcon(R.drawable.baseline_notifications_24)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true); // Automatically removes the notification when clicked
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        notificationManager.notify(2, builder.build());
+    }
+    public void notification3(String title) {
+        Context context = this;
+
+        // Create the notification channel
+        NotificationHelper.createNotificationChannel(context);
+
+        // Create an intent to launch when the notification is clicked
+        Intent intent = new Intent(context, NotificationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Create and display the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationHelper.CHANNEL_ID)
+                .setContentTitle("Event required your presence")
+                .setContentText(title)
+                .setSmallIcon(R.drawable.baseline_notifications_24)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true); // Automatically removes the notification when clicked
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        notificationManager.notify(3, builder.build());
+    }
+    public void notification4(String title) {
+        Context context = this;
+
+        // Create the notification channel
+        NotificationHelper.createNotificationChannel(context);
+
+        // Create an intent to launch when the notification is clicked
+        Intent intent = new Intent(context, NotificationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Create and display the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationHelper.CHANNEL_ID)
+                .setContentTitle("Guidance")
+                .setContentText(title)
+                .setSmallIcon(R.drawable.baseline_notifications_24)
+                .setContentIntent(pendingIntent)
+                .setStyle(new NotificationCompat.BigTextStyle())
+                .setAutoCancel(true); // Automatically removes the notification when clicked
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        notificationManager.notify(3, builder.build());
+    }
     private byte[] getProfilePic(String id) {
         byte[] defaultProfile = null;
 
@@ -256,5 +463,9 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         }else {
             super.onBackPressed();
         }
+    }
+    @Override
+    public void onProfileUpdated(String newProfilePictureUrl) {
+        displayProf();
     }
 }

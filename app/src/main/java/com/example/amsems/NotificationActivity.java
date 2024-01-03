@@ -1,5 +1,9 @@
 package com.example.amsems;
+
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,7 +11,16 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.amsems.utils.ALoadingDialog;
 import com.example.amsems.utils.NotificationAdapter;
+import com.pusher.client.Pusher;
+import com.pusher.client.PusherOptions;
+import com.pusher.client.channel.Channel;
+import com.pusher.client.channel.PusherEvent;
+import com.pusher.client.channel.SubscriptionEventListener;
+import com.pusher.client.connection.ConnectionEventListener;
+import com.pusher.client.connection.ConnectionState;
+import com.pusher.client.connection.ConnectionStateChange;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,13 +37,20 @@ import java.util.Objects;
 public class NotificationActivity extends AppCompatActivity {
     ArrayList<String> _headerTitle, _title, _date;
     RecyclerView recNotifications;
-
+    ALoadingDialog aLoadingDialog;
+    private String studentId;
+    private SharedPreferences sharedPreferences;
+    Channel channel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification);
 
         recNotifications = findViewById(R.id.recNotifications);
+        aLoadingDialog = new ALoadingDialog(this);
+
+        sharedPreferences = getSharedPreferences("stud_info", MODE_PRIVATE);
+        studentId = sharedPreferences.getString("studentID", "null");
 
         _headerTitle = new ArrayList<String>();
         _title = new ArrayList<String>();
@@ -47,34 +67,143 @@ public class NotificationActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        displayEventNotifications();
-        displayAnnouncementNotifications();
+        aLoadingDialog.show();
+        new DisplayNotificationTask().execute();
 
-        // Sort the data by date_time
-        sortDataByDate();
+        PusherOptions options = new PusherOptions();
+        options.setCluster("ap1");
 
-        NotificationAdapter eventAdapter = new NotificationAdapter(this, _headerTitle, _title, _date);
-        recNotifications.setAdapter(eventAdapter);
-        recNotifications.setLayoutManager(new LinearLayoutManager(this));
+        Pusher pusher = new Pusher("6cc843a774ea227a754f", options);
+
+        pusher.connect(new ConnectionEventListener() {
+            @Override
+            public void onConnectionStateChange(ConnectionStateChange change) {
+                Log.i("Pusher", "State changed from " + change.getPreviousState() +
+                        " to " + change.getCurrentState());
+            }
+
+            @Override
+            public void onError(String message, String code, Exception e) {
+                Log.i("Pusher", "There was a problem connecting! " +
+                        "\ncode: " + code +
+                        "\nmessage: " + message +
+                        "\nException: " + e
+                );
+            }
+        }, ConnectionState.ALL);
+
+        channel = pusher.subscribe("amsems");
+
+        pusher1();
+        pusher2();
+        pusher3();
     }
+    public void pusher1(){
+        channel.bind("notification", new SubscriptionEventListener() {
+            @Override
+            public void onEvent(PusherEvent event) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        _headerTitle.clear();
+                        _title.clear();
+                        _date.clear();
+                        new DisplayNotificationTask().execute();
+                    }
+                });
+            }
+        });
+    }
+    public void pusher2(){
+        channel.bind("events", new SubscriptionEventListener() {
+            @Override
+            public void onEvent(PusherEvent event) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        _headerTitle.clear();
+                        _title.clear();
+                        _date.clear();
+                        new DisplayNotificationTask().execute();
+                    }
+                });
+            }
+        });
+    }
+    public void pusher3(){
+        channel.bind("absentieesm", new SubscriptionEventListener() {
+            @Override
+            public void onEvent(PusherEvent event) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        _headerTitle.clear();
+                        _title.clear();
+                        _date.clear();
+                        new DisplayNotificationTask().execute();
+                    }
+                });
+            }
+        });
+    }
+    private class DisplayNotificationTask extends AsyncTask<Void, Void, Void> {
 
+        @Override
+        protected Void doInBackground(Void... params) {
+            displayEventNotifications();
+            displayAnnouncementNotifications();
+            displayGuidanceNotifications();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            // Update UI after executing the task
+            // Sort the data by date_time
+            sortDataByDate();
+
+            NotificationAdapter eventAdapter = new NotificationAdapter(NotificationActivity.this, _headerTitle, _title, _date);
+            recNotifications.setAdapter(eventAdapter);
+            recNotifications.setLayoutManager(new LinearLayoutManager(NotificationActivity.this));
+            aLoadingDialog.cancel();
+        }
+    }
     public void displayEventNotifications() {
         try {
             Connection connection = SQL_Connection.connectionClass();
 
             if (connection != null) {
-                String queryEvent = "SELECT Event_Name, Date_Time FROM tbl_events";
+                String queryEvent = "SELECT Event_ID, Event_Name, Date_Time FROM tbl_events";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(queryEvent);
                      ResultSet resultSet = preparedStatement.executeQuery()) {
 
                     if (resultSet != null) {
                         while (resultSet.next()) {
+                            String eventID = resultSet.getString("Event_ID");
                             String title = resultSet.getString("Event_Name");
                             String datetime = resultSet.getString("Date_Time");
 
                             _headerTitle.add("Event");
                             _title.add(title);
                             _date.add(datetime);
+
+                            if(isEventForSpecificStudents(eventID)){
+                                String query2 = "SELECT e.Event_ID, e.Event_Name, s.ID AS id, e.Date_Time FROM tbl_events e LEFT JOIN tbl_student_accounts s ON CHARINDEX(s.FirstName + ' ' + s.LastName, e.Specific_Students) > 0 OR CHARINDEX(s.LastName + ' ' + s.FirstName, e.Specific_Students) > 0 LEFT JOIN tbl_departments d ON s.Department = d.Department_ID WHERE e.Exclusive = 'Specific Students' AND s.ID = ? AND e.Event_ID = ? ORDER BY e.Date_Time DESC";
+                                try (PreparedStatement preparedStatement2 = connection.prepareStatement(query2)) {
+                                    preparedStatement2.setString(1, studentId);
+                                    preparedStatement2.setString(2, eventID);
+
+                                    try (ResultSet resultSet2 = preparedStatement2.executeQuery()) {
+                                        if (resultSet2.next()) {
+                                            String title2 = resultSet2.getString("Event_Name");
+                                            String datetime2 = resultSet2.getString("Date_Time");
+                                            _headerTitle.add("Event required your presence");
+                                            _title.add(title2);
+                                            _date.add(datetime2);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 } finally {
@@ -85,7 +214,26 @@ public class NotificationActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+    private boolean isEventForSpecificStudents(String eventId) {
+        try (Connection cn = SQL_Connection.connectionClass();
+             PreparedStatement stmt = cn.prepareStatement("SELECT Exclusive FROM tbl_events WHERE Event_ID = ? OR ? IS NULL")) {
 
+            cn.setAutoCommit(true); // Optional, depending on your requirements
+            stmt.setObject(1, eventId != null ? eventId : null);
+            stmt.setObject(2, eventId != null ? eventId : null);
+
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                if (resultSet.next()) {
+                    Object result = resultSet.getObject("Exclusive");
+                    return result != null && result.toString().equals("Specific Students");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
+        }
+        return false;
+    }
     public void displayAnnouncementNotifications() {
         try {
             Connection connection = SQL_Connection.connectionClass();
@@ -113,7 +261,36 @@ public class NotificationActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+    public void displayGuidanceNotifications() {
+        try {
+            Connection connection = SQL_Connection.connectionClass();
 
+            if (connection != null) {
+                String query = "SELECT Message, Date_Time FROM tbl_absenteeism_notified WHERE Student_ID = ?";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    preparedStatement.setString(1, studentId);
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                        if (resultSet != null) {
+                            while (resultSet.next()) {
+                                String title = resultSet.getString("Message");
+                                String datetime = resultSet.getString("Date_Time");
+
+                                _headerTitle.add("Guidance");
+                                _title.add(title);
+                                _date.add(datetime);
+                            }
+                        }
+                    }
+                } finally {
+                    connection.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     private void sortDataByDate() {
         ArrayList<String> sortedHeaderTitle = new ArrayList<>();
         ArrayList<String> sortedTitle = new ArrayList<>();
@@ -125,7 +302,7 @@ public class NotificationActivity extends AppCompatActivity {
             dateWrappers.add(new DateWrapper(i, _date.get(i)));
         }
 
-        // Sort the DateWrapper list based on the date
+        // Sort the DateWrapper list based on the date in descending order
         Collections.sort(dateWrappers, new Comparator<DateWrapper>() {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -134,7 +311,8 @@ public class NotificationActivity extends AppCompatActivity {
                 try {
                     Date d1 = dateFormat.parse(wrapper1.getDate());
                     Date d2 = dateFormat.parse(wrapper2.getDate());
-                    return d1.compareTo(d2);
+                    // Change the order to achieve descending sorting
+                    return d2.compareTo(d1);
                 } catch (ParseException e) {
                     e.printStackTrace();
                     return 0;
@@ -155,6 +333,7 @@ public class NotificationActivity extends AppCompatActivity {
         _title = sortedTitle;
         _date = sortedDate;
     }
+
 
     // Helper class to hold the original index along with the date
     private static class DateWrapper {

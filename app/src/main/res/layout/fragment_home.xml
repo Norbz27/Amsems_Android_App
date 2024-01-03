@@ -55,34 +55,19 @@
                     android:textColor="@color/black"
                     android:textSize="25sp" />
 
-                <HorizontalScrollView
-                    android:id="@+id/sv1"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recEv"
                     android:layout_width="match_parent"
                     android:layout_height="160dp"
                     android:layout_below="@id/tv1"
                     android:layout_marginTop="10dp"
-                    android:contentDescription="events"
-                    android:foregroundGravity="center_vertical"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:id="@+id/linear"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal">
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/recEv"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:scrollbars="horizontal"/>
-                    </LinearLayout>
-                </HorizontalScrollView>
+                    android:orientation="horizontal" />
 
                 <TextView
                     android:id="@+id/tv2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/sv1"
+                    android:layout_below="@id/recEv"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"
                     android:fontFamily="@font/poppins_semibold"

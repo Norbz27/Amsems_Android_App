@@ -41,7 +41,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.tvTitle.setText(String.valueOf(_title.get(position)));
         holder.imageView.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(context, String.valueOf(String.valueOf(_headerTitle.get(position)).charAt(0))));
         String givenDateString = String.valueOf(_date.get(position));
-
         // Parse the given date string to Date object
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         Date givenDate = null;
@@ -58,7 +57,18 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         long timeDifference = currentDate.getTime() - givenDate.getTime();
 
         // Display the time span in a human-readable format
-        CharSequence timeAgo = DateUtils.getRelativeTimeSpanString(givenDate.getTime(), currentDate.getTime(), DateUtils.MINUTE_IN_MILLIS);
+        CharSequence timeAgo;
+
+        if (timeDifference < DateUtils.MINUTE_IN_MILLIS) {
+            timeAgo = "now";
+        } else {
+            timeAgo = DateUtils.getRelativeTimeSpanString(
+                    givenDate.getTime(),
+                    currentDate.getTime(),
+                    DateUtils.MINUTE_IN_MILLIS,
+                    DateUtils.FORMAT_ABBREV_RELATIVE
+            );
+        }
         holder.tvDatetime.setText(timeAgo);
     }
     @Override

@@ -41,6 +41,7 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.fragment.app.Fragment;
 
 import com.example.amsems.utils.ALoadingDialog;
+import com.example.amsems.utils.ProfileRefreshListener;
 import com.github.drjacky.imagepicker.ImagePicker;
 import com.google.android.material.navigation.NavigationView;
 
@@ -84,7 +85,22 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
                 if(result.getResultCode()==RESULT_OK){
                     Uri uri=result.getData().getData();
                     byte[] imageByte = uriToByteArray(getActivity(), uri);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageByte, 0, imageByte.length);
                     updateProfilePic(studid,imageByte);
+                    if (bitmap != null) {
+                        // Get the circular background drawable
+                        Drawable circularDrawable = ContextCompat.getDrawable(getActivity(), R.drawable.circle_profile);
+
+                        // Combine the circular background with the profile picture
+                        RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+                        roundedBitmapDrawable.setCircular(true);
+
+                        // Set the combined drawable to the ImageButton
+                        profilePic.setImageDrawable(roundedBitmapDrawable);
+                    } else {
+                        // Handle the case where the Bitmap is null (no image data)
+                        profilePic.setImageResource(R.mipmap.ic_profile);
+                    }
                     Toast.makeText(getActivity(), "Successfully Change Profile", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 }else if(result.getResultCode()==ImagePicker.RESULT_ERROR){
@@ -224,6 +240,10 @@ public class ProfileFragment extends Fragment implements NavigationView.OnNaviga
 
                 if (rowsAffected > 0) {
                     Toast.makeText(getActivity(), "Profile picture updated successfully.", Toast.LENGTH_SHORT).show();
+                    if (getActivity() instanceof ProfileRefreshListener) {
+                        ((ProfileRefreshListener) getActivity()).onProfileUpdated("new");
+                    }
+
                 } else {
                     Toast.makeText(getActivity(), "Failed to update profile picture. Student not found.", Toast.LENGTH_SHORT).show();
                 }
