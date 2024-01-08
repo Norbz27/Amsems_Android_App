@@ -4,18 +4,61 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_marginVertical="15dp"
+    android:layout_marginTop="15dp"
     tools:context=".BalanceFragment">
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingTop="5dp"
-        android:paddingBottom="20dp"
+        android:paddingBottom="10dp"
         android:paddingHorizontal="25dp"
         android:scrollbars="none">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+            <androidx.cardview.widget.CardView
+                android:id="@+id/r0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="8dp"
+                android:elevation="10dp"
+                android:layout_marginBottom="15dp">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/round_square"
+                    android:paddingVertical="15dp"
+                    android:paddingHorizontal="15dp">
+                    <TextView
+                        android:id="@+id/tv20"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="School Year"
+                        android:textColor="#202020"
+                        android:fontFamily="@font/poppins_semibold"/>
+
+                    <Spinner
+                        android:id="@+id/spinYear"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_below="@id/tv20"
+                        android:background="@drawable/custom_dropdown"
+                        android:padding="3dp"
+                        android:spinnerMode="dropdown" />
+                    <TextView
+                        android:id="@+id/tvDep"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:text="Department"
+                        android:layout_below="@id/spinYear"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:textSize="16sp"
+                        android:layout_marginTop="5dp"
+                        android:textColor="@color/darkblue"/>
+
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
             <RelativeLayout
                 android:id="@+id/r1"
                 android:layout_width="match_parent"
@@ -23,6 +66,7 @@
                 android:background="@drawable/round_square"
                 android:backgroundTint="#FFC107"
                 android:paddingVertical="10dp"
+                android:layout_below="@id/r0"
                 android:paddingHorizontal="15dp">
                 <TextView
                     android:layout_width="wrap_content"

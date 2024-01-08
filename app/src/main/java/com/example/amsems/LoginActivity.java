@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.amsems.utils.ALoadingDialog;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,6 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     SQL_Connection con;
     SharedPreferences sharedPreferences;
     Intent intent;
+    ALoadingDialog aLoadingDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +36,8 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         edStudID = findViewById(R.id.tbSchID);
         edPass = findViewById(R.id.tbPass);
+
+        aLoadingDialog = new ALoadingDialog(this);
 
         sharedPreferences = getSharedPreferences("stud_info", MODE_PRIVATE);
         intent = new Intent(LoginActivity.this, NavigationActivity.class);
@@ -48,7 +53,7 @@ public class LoginActivity extends AppCompatActivity {
                 // Handle login logic here
                 String id = edStudID.getText().toString().trim();
                 String password = edPass.getText().toString().trim();
-
+                aLoadingDialog.show();
                 // Perform authentication or any other login actions
                 if (isValidCredentials(id, password)) {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -56,6 +61,7 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString("password", password);
                     editor.apply();
                     startActivity(intent);
+                    aLoadingDialog.cancel();
                     finish();
                  } else {
                     // Invalid credentials, show error message or handle accordingly
@@ -77,6 +83,9 @@ public class LoginActivity extends AppCompatActivity {
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("dep", resultSet.getString("Department"));
+                        editor.apply();
                         isValid = true;
                     }
                 }

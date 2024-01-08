@@ -52,7 +52,7 @@ public class HomeFragment extends Fragment {
     TextView tvTotalBal, tvDep;
     SharedPreferences sharedPreferences;
     ALoadingDialog aLoadingDialog;
-    private String rembalformattedValue;
+    private String rembalformattedValue = "0.00";
     private String dep;
 
     public HomeFragment() {

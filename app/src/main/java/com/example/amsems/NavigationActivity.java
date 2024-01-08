@@ -227,9 +227,10 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                                 }
                                 Log.e("Event: ", String.valueOf(isEventForSpecificStudents(eventID)));
                                 if(isEventForSpecificStudents(eventID)){
-                                    String query2 = "SELECT e.Event_ID, e.Event_Name, s.ID AS id FROM tbl_events e LEFT JOIN tbl_student_accounts s ON CHARINDEX(s.FirstName + ' ' + s.LastName, e.Specific_Students) > 0 OR CHARINDEX(s.LastName + ' ' + s.FirstName, e.Specific_Students) > 0 LEFT JOIN tbl_departments d ON s.Department = d.Department_ID WHERE e.Exclusive = 'Specific Students' AND s.ID = ? ORDER BY e.Date_Time DESC";
+                                    String query2 = "SELECT e.Event_ID, e.Event_Name, s.ID AS id FROM tbl_events e LEFT JOIN tbl_student_accounts s ON CHARINDEX(s.FirstName + ' ' + s.LastName, e.Specific_Students) > 0 OR CHARINDEX(s.LastName + ' ' + s.FirstName, e.Specific_Students) > 0 LEFT JOIN tbl_departments d ON s.Department = d.Department_ID WHERE e.Exclusive = 'Specific Students' AND s.ID = ? AND Event_ID = ? ORDER BY e.Date_Time DESC";
                                     try (PreparedStatement preparedStatement = connection.prepareStatement(query2)) {
                                         preparedStatement.setString(1, studentId);
+                                        preparedStatement.setString(2, eventID);
 
                                         try (ResultSet resultSet = preparedStatement.executeQuery()) {
                                             if (resultSet.next()) {
@@ -242,7 +243,6 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                                     }
                                 }
                             }
-
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }

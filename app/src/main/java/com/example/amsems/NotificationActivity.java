@@ -44,6 +44,8 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
     private String studentId;
     private SharedPreferences sharedPreferences;
     Channel channel;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
