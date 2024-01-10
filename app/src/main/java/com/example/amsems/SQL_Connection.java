@@ -18,20 +18,20 @@ public class SQL_Connection {
 
         try {
             // Database connection logic (JDBC)
-            String azureServer = "amsems.database.windows.net";
+            String azureServer = "192.168.1.100";
             String azureDatabase = "db_Amsems";
-            String azureUser = "CloudSA230f235e@amsems";
-            String azurePassword = "Nozurbnorberto27";
+            String azureUser = "nor";
+            String azurePassword = "12345";
 
             String googleServer = "104.197.95.130";
             String googleDatabase = "db_Amsems";
             String googleUser = "sqlserver";
             String googlePassword = "Nozurbnorberto27";
 
-            String connectionUrl = "jdbc:jtds:sqlserver://"+googleServer+":1433;" +
-                    "databaseName="+googleDatabase+";" +
-                    "user="+googleUser+";" +
-                    "password="+googlePassword+";" +
+            String connectionUrl = "jdbc:jtds:sqlserver://"+azureServer+":1433;" +
+                    "databaseName="+azureDatabase+";" +
+                    "user="+azureUser+";" +
+                    "password="+azurePassword+";" +
                     "encrypt=true;" +
                     "trustServerCertificate=false;" +
                     "hostNameInCertificate=*.database.windows.net;" +

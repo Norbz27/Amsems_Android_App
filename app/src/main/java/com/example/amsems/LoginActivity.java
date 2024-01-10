@@ -66,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
                  } else {
                     // Invalid credentials, show error message or handle accordingly
                     Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                    aLoadingDialog.cancel();
                 }
             }
         });
@@ -83,10 +84,10 @@ public class LoginActivity extends AppCompatActivity {
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
+                        isValid = true;
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("dep", resultSet.getString("Department"));
                         editor.apply();
-                        isValid = true;
                     }
                 }
             }
