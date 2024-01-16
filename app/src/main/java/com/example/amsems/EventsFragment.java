@@ -14,9 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.applandeo.materialcalendarview.CalendarDay;
 import com.applandeo.materialcalendarview.CalendarView;
 import com.example.amsems.utils.ALoadingDialog;
+import com.example.amsems.utils.DisplayActivityDataAsyncTask;
 import com.example.amsems.utils.DisplayEventDataAsyncTask;
 import com.example.amsems.utils.DrawableUtils;
 import com.example.amsems.utils.EventRecyclerViewInterface;
+import com.example.amsems.utils.FetchActivityDataAsyncTask;
 import com.example.amsems.utils.FetchEventDataAsyncTask;
 
 import java.sql.Connection;
@@ -48,7 +50,9 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
     List<CalendarDay> events;
     CalendarView calendarView;
     RecyclerView recyclerView;
+    RecyclerView recyclerView2;
     ArrayList<String> _name, _date, _color, _id;
+    ArrayList<String> _nameA, _dateA, _colorA, _idA;
     Date selectedDate;
     private ALoadingDialog aLoadingDialog;
 
@@ -91,6 +95,7 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
         aLoadingDialog = new ALoadingDialog(getActivity());
         calendarView = view.findViewById(R.id.calendarView);
         recyclerView = view.findViewById(R.id.rcview);
+        recyclerView2 = view.findViewById(R.id.rcview2);
 
         events = new ArrayList<>();
 
@@ -98,6 +103,12 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
         _date = new ArrayList<>();
         _color = new ArrayList<>();
         _id = new ArrayList<>();
+
+        _nameA = new ArrayList<>();
+        _dateA = new ArrayList<>();
+        _colorA = new ArrayList<>();
+        _idA = new ArrayList<>();
+
         aLoadingDialog.show();
         new GetEventDatesAsyncTask().execute();
 
@@ -108,13 +119,14 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
 
         String formattedDateCurrent = sdf2.format(now);
         new FetchEventDataAsyncTask(getContext(), recyclerView, _id, _name, _date, _color, this).execute(formattedDateCurrent);
-
+        new FetchActivityDataAsyncTask(getContext(), recyclerView2, _idA, _nameA, _dateA, _colorA, this).execute(formattedDateCurrent);
         //Toast.makeText(getActivity(), formattedDateCurrent, Toast.LENGTH_SHORT).show();
 
         calendarView.setOnDayClickListener(eventDay -> {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             selectedDate = eventDay.getCalendar().getTime();
             String formattedDate = sdf.format(selectedDate);
+            new DisplayActivityDataAsyncTask(getContext(), recyclerView2, _idA,_nameA, _dateA, _colorA, this).execute(formattedDate);
             new DisplayEventDataAsyncTask(getContext(), recyclerView, _id,_name, _date, _color, this).execute(formattedDate);
             //Toast.makeText(getActivity(), formattedDate, Toast.LENGTH_SHORT).show();
         });
@@ -142,6 +154,12 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
     public void onEventClick(int position, String eventid) {
         Intent intent = new Intent(getActivity(), EventInfoActivity.class);
         intent.putExtra("EventID", eventid);
+        startActivity(intent);
+    }
+    @Override
+    public void onActivityClick(int position, String actid) {
+        Intent intent = new Intent(getActivity(), ActivityInfo_Activity.class);
+        intent.putExtra("ActivityID", actid);
         startActivity(intent);
     }
 
@@ -200,6 +218,34 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
                                 }
                             }
                         }
+                    }
+                    query = "SELECT Date FROM tbl_activities";
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                         ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                        if (resultSet != null) {
+                            while (resultSet.next()) {
+                                String date = resultSet.getString("Date");
+
+                                Calendar calendarnow = Calendar.getInstance();
+                                CalendarDay calendarDaynow = new CalendarDay(calendarnow);
+                                calendarDaynow.setBackgroundDrawable(DrawableUtils.getDayCircle(getActivity(), com.applandeo.materialcalendarview.R.color.defaultColor, android.R.color.transparent));
+                                events.add(calendarDaynow);
+
+                                @SuppressLint("SimpleDateFormat")
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                                Date startDate = dateFormat.parse(date);
+
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.setTime(startDate);
+
+                                CalendarDay calendarDay = new CalendarDay(calendar);
+                                calendarDay.setBackgroundDrawable(DrawableUtils.getCircleDrawableWithText(getContext(), ""));
+                                calendarDay.setLabelColor(R.color.white);
+                                events.add(calendarDay);
+
+                            }
+                        }
                     } finally {
                         connection.close();
                     }
@@ -207,9 +253,6 @@ public class EventsFragment extends Fragment implements EventRecyclerViewInterfa
             } catch (SQLException | ParseException e) {
                 e.printStackTrace();
             }
-
-
-
             return events;
         }
 

@@ -22,29 +22,26 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-public class EventInfoActivity extends AppCompatActivity {
-
-    TextView tvName, tvPenalty, tvAudience, tvAttendance;
-    EditText edStart, edEnd, edDes;
-    ImageView ivEvent;
+public class ActivityInfo_Activity extends AppCompatActivity {
+    TextView tvName;
+    EditText edDate, edTime, edDes;
+    ImageView ivActivity;
     ALoadingDialog aLoadingDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event_info);
+        setContentView(R.layout.activity_info);
 
         tvName = findViewById(R.id.tvActivityName);
-        edStart = findViewById(R.id.startdateEditText);
-        edEnd = findViewById(R.id.enddateEditText);
+        edDate = findViewById(R.id.dateEditText);
+        edTime = findViewById(R.id.timeEditText);
+        ivActivity = findViewById(R.id.ivActivity);
         edDes = findViewById(R.id.edActivityDes);
-        tvPenalty = findViewById(R.id.tvPenalty);
-        tvAttendance = findViewById(R.id.tvAttendance);
-        tvAudience = findViewById(R.id.tvAudience);
-        ivEvent = findViewById(R.id.ivActivity);
 
         aLoadingDialog = new ALoadingDialog(this);
 
@@ -56,37 +53,34 @@ public class EventInfoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         Intent intent = getIntent();
-        String eventid = intent.getStringExtra("EventID");
+        String activityid = intent.getStringExtra("ActivityID");
 
         aLoadingDialog.show();
-        new DisplayAsyncTask().execute(eventid);
-
+        new DisplayAsyncTask().execute(activityid);
     }
     private class DisplayAsyncTask extends AsyncTask<String, Void, Void> {
 
         byte[] imageData;
-        String name, des, pen, aud, att;
-        Date start, end;
+        String name, des;
+        Date date;
+        Time time;
         @Override
         protected Void doInBackground(String... params) {
-            String eventID = params[0];
+            String activityID = params[0];
 
             try {
                 Connection connection = SQL_Connection.connectionClass();
 
-                String query = "SELECT Event_Name, Start_Date, End_Date, Description, Image, Attendance, Exclusive, Penalty FROM tbl_events WHERE Event_ID=?";
+                String query = "SELECT Activity_Name, Date, Time, Description, Image FROM tbl_activities WHERE Activity_ID=?";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    preparedStatement.setString(1, eventID);
+                    preparedStatement.setString(1, activityID);
 
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         if (resultSet.next()) {
-                            name = resultSet.getString("Event_Name");
-                            start = resultSet.getDate("Start_Date");
-                            end = resultSet.getDate("End_Date");
+                            name = resultSet.getString("Activity_Name");
+                            date = resultSet.getDate("Date");
+                            time = resultSet.getTime("Time");
                             des = resultSet.getString("Description");
-                            pen = resultSet.getString("Penalty");
-                            aud = resultSet.getString("Exclusive");
-                            att = resultSet.getString("Attendance");
 
                             imageData = resultSet.getBytes("Image");
                         }
@@ -107,42 +101,31 @@ public class EventInfoActivity extends AppCompatActivity {
                     // Decode image data into a Bitmap
                     Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
                     // Set the combined drawable to the ImageView
-                    ivEvent.setImageBitmap(bitmap);
+                    ivActivity.setImageBitmap(bitmap);
                 } catch (Exception e) {
                     Log.e(TAG, "Error decoding image: " + e.getMessage());
                     // Handle the case where decoding fails (e.g., set a default image)
-                    ivEvent.setImageResource(R.drawable.events);
+                    ivActivity.setImageResource(R.drawable.events);
                 }
             } else {
                 // Handle the case where imageData is null or empty (set a default image)
-                ivEvent.setImageResource(R.drawable.events);
+                ivActivity.setImageResource(R.drawable.events);
             }
 
             SimpleDateFormat sdf2 = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
+            SimpleDateFormat sdf3 = new SimpleDateFormat("hh:mm a");
 
-            String startdate = sdf2.format(start);
-            String enddate = sdf2.format(end);
+
+            String formattedDate = sdf2.format(date);
+            String formattedTime = sdf3.format(time);
             tvName.setText(name);
-            edStart.setText(startdate);
-            edEnd.setText(enddate);
+            edDate.setText(formattedDate);
+            edTime.setText(formattedTime);
             edDes.setText(des);
-            tvAudience.setText(aud);
 
-            if(att.equals("1")){
-                tvAttendance.setText("Required");
-            } else {
-                tvAttendance.setText("Not Required");
-            }
-
-            if(pen.equals("1")){
-                tvPenalty.setText("Yes");
-            } else {
-                tvPenalty.setText("No");
-            }
             aLoadingDialog.cancel();
         }
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

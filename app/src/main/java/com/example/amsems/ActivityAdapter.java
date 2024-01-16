@@ -17,11 +17,11 @@ import com.example.amsems.utils.EventRecyclerViewInterface;
 
 import java.util.ArrayList;
 
-public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.MyViewHolder> {
+public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.MyViewHolder> {
     private final EventRecyclerViewInterface eventRecyclerViewInterface;
     private Context context;
     private ArrayList _id, _eventname, _date, _color;
-    public EventsAdapter(Context context, ArrayList _id,ArrayList _eventname, ArrayList _date, ArrayList _color, EventRecyclerViewInterface eventRecyclerViewInterface){
+    public ActivityAdapter(Context context, ArrayList _id, ArrayList _eventname, ArrayList _date, ArrayList _color, EventRecyclerViewInterface eventRecyclerViewInterface){
         this.context = context;
         this._id = _id;
         this._eventname = _eventname;
@@ -71,7 +71,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.MyViewHold
                         int position = getAdapterPosition();
 
                         if(position != RecyclerView.NO_POSITION){
-                            eventRecyclerViewInterface.onEventClick(position, id);
+                            eventRecyclerViewInterface.onActivityClick(position, id);
                         }
                     }
                 }

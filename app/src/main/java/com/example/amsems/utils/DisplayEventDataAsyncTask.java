@@ -5,7 +5,6 @@ import static android.content.ContentValues.TAG;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,7 +43,7 @@ public class DisplayEventDataAsyncTask extends AsyncTask<String, Void, Void> {
         String selDate = params[0];
         try {
             Connection connection = SQL_Connection.connectionClass();
-            String query = "SELECT Event_ID, Event_Name, Start_Date, Color FROM tbl_events WHERE Start_Date <= ? AND End_Date >= ?";
+            String query = "SELECT Event_ID, Event_Name, Start_Date, Color FROM tbl_events WHERE Start_Date <= ? AND End_Date >= ? ORDER BY 1 DESC";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, selDate);
                 preparedStatement.setString(2, selDate);
@@ -58,7 +57,7 @@ public class DisplayEventDataAsyncTask extends AsyncTask<String, Void, Void> {
                             String id = resultSet.getString("Event_ID");
                             String title = resultSet.getString("Event_Name");
                             String color = resultSet.getString("Color");
-                            Date date = resultSet.getDate("Start_Date");
+                            Date date = Date.valueOf(selDate);
                             SimpleDateFormat sdfOutput = new SimpleDateFormat("EEE, MMMM dd, yyyy");
                             String formattedDate = sdfOutput.format(date);
                             _id.add(id);
@@ -84,7 +83,7 @@ public class DisplayEventDataAsyncTask extends AsyncTask<String, Void, Void> {
     @Override
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
-        Toast.makeText(context, "No events", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(context, "No events", Toast.LENGTH_SHORT).show();
     }
 
     @Override

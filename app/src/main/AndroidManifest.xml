@@ -20,6 +20,9 @@
         android:theme="@style/Theme.NoActionbar"
         tools:targetApi="31">
         <activity
+            android:name=".ActivityInfo_Activity"
+            android:exported="false" />
+        <activity
             android:name=".NotificationDetailActivity"
             android:exported="false" />
         <activity
