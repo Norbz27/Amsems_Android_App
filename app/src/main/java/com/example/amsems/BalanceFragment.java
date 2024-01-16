@@ -273,7 +273,7 @@ public class BalanceFragment extends Fragment {
                     "                    LEFT JOIN\n" +
                     "                        tbl_student_accounts stud ON att.Student_ID = stud.ID\n" +
                     "                    LEFT JOIN\n" +
-                    "\t\t\t\t\t\ttbl_balance_fees bf ON stud.ID = bf.Student_ID\n" +
+                    "\t\t\t\t\t\ttbl_balance_fees bf ON stud.ID = bf.Student_ID AND e.Event_ID = bf.Event_ID\n" +
                     "\t\t\t\t\tLEFT JOIN\n" +
                     "\t\t\t\t\t\ttbl_acad ac ON bf.School_Year = ac.Acad_ID\n" +
                     "                    WHERE\n" +
@@ -359,28 +359,39 @@ public class BalanceFragment extends Fragment {
                     "\t\t\t\t\t\tsyBal\n" +
                     "                    ORDER BY \n" +
                     "                        s.Lastname;";
-
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, studId);
                 preparedStatement.setString(2, cbYear.getSelectedItem().toString());
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
+                    if (resultSet.next()) {
                         // Extract data from the result set
                         String studentId = resultSet.getString("Student_ID");
+
                         double totalBalanceFee = resultSet.getDouble("Total_Balance_Fee");
+                        if (resultSet.wasNull()) {
+                            totalBalanceFee = 0.00; // Set default value if null
+                        }
+
                         double totalPaymentAmount = resultSet.getDouble("Total_Payment_Amount");
+                        if (resultSet.wasNull()) {
+                            totalPaymentAmount = 0.00; // Set default value if null
+                        }
+
                         double remainingBalance = resultSet.getDouble("Remaining_Balance");
+                        if (resultSet.wasNull()) {
+                            remainingBalance = 0.00; // Set default value if null
+                        }
 
                         balfeeformattedValue = String.format("%.2f", totalBalanceFee);
                         payamformattedValue = String.format("%.2f", totalPaymentAmount);
                         rembalformattedValue = String.format("%.2f", remainingBalance);
-
-
+                    }else {
+                        balfeeformattedValue = "0.00";
+                        payamformattedValue = "0.00";
+                        rembalformattedValue = "0.00";
                     }
                 }
-
-
             }
 
             query = "SELECT COALESCE(bf.Student_ID, t.Student_ID) AS Student_ID, " +
@@ -421,12 +432,14 @@ public class BalanceFragment extends Fragment {
                 preparedStatement2.setString(1, studId);
 
                 try (ResultSet resultSet = preparedStatement2.executeQuery()) {
-                    while (resultSet.next()) {
+                    if (resultSet.next()) {
                         // Extract data from the result set
                         String studentId = resultSet.getString("Student_ID");
                         double remainingBalance = resultSet.getDouble("Remaining_Balance");
 
                         allrembalformattedValue = String.format("%.2f", remainingBalance);
+                    }else {
+                        allrembalformattedValue = "0.00";
                     }
                 }
             }

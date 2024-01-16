@@ -1,5 +1,7 @@
 package com.example.amsems;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -45,7 +47,7 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
     private SharedPreferences sharedPreferences;
     Channel channel;
 
-
+    String schyear;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -174,8 +176,10 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
 
         @Override
         protected Void doInBackground(Void... params) {
+            displaySchoolYear();
             displayEventNotifications();
             displayAnnouncementNotifications();
+            displayActivityNotifications();
             displayGuidanceNotifications();
             return null;
         }
@@ -192,14 +196,37 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
             aLoadingDialog.cancel();
         }
     }
+    public void displaySchoolYear(){
+        try {
+            Connection connection = SQL_Connection.connectionClass();
+
+            String query = "SELECT Acad_ID FROM tbl_acad WHERE Status = 1";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        // Extract data from the result set
+                        String schyear = resultSet.getString("Acad_ID");
+
+                       this.schyear = schyear;
+
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            Log.e(TAG, "SQL Exception: " + e.getMessage());
+        }
+    }
     public void displayEventNotifications() {
         try {
             Connection connection = SQL_Connection.connectionClass();
 
             if (connection != null) {
-                String queryEvent = "SELECT Event_ID, Event_Name, Date_Time FROM tbl_events";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(queryEvent);
-                     ResultSet resultSet = preparedStatement.executeQuery()) {
+                String queryEvent = "SELECT Event_ID, Event_Name, Date_Time FROM tbl_events WHERE School_Year = ?";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(queryEvent)) {
+                    preparedStatement.setString(1, schyear);
+                     ResultSet resultSet = preparedStatement.executeQuery();
 
                     if (resultSet != null) {
                         while (resultSet.next()) {
@@ -212,10 +239,11 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
                             _date.add(datetime);
 
                             if(isEventForSpecificStudents(eventID)){
-                                String query2 = "SELECT e.Event_ID, e.Event_Name, s.ID AS id, e.Date_Time FROM tbl_events e LEFT JOIN tbl_student_accounts s ON CHARINDEX(s.FirstName + ' ' + s.LastName, e.Specific_Students) > 0 OR CHARINDEX(s.LastName + ' ' + s.FirstName, e.Specific_Students) > 0 LEFT JOIN tbl_departments d ON s.Department = d.Department_ID WHERE e.Exclusive = 'Specific Students' AND s.ID = ? AND e.Event_ID = ? ORDER BY e.Date_Time DESC";
+                                String query2 = "SELECT e.Event_ID, e.Event_Name, s.ID AS id, e.Date_Time FROM tbl_events e LEFT JOIN tbl_student_accounts s ON CHARINDEX(s.FirstName + ' ' + s.LastName, e.Specific_Students) > 0 OR CHARINDEX(s.LastName + ' ' + s.FirstName, e.Specific_Students) > 0 LEFT JOIN tbl_departments d ON s.Department = d.Department_ID WHERE e.Exclusive = 'Specific Students' AND s.ID = ? AND e.Event_ID = ? AND School_Year = ? ORDER BY e.Date_Time DESC";
                                 try (PreparedStatement preparedStatement2 = connection.prepareStatement(query2)) {
                                     preparedStatement2.setString(1, studentId);
                                     preparedStatement2.setString(2, eventID);
+                                    preparedStatement2.setString(3, schyear);
 
                                     try (ResultSet resultSet2 = preparedStatement2.executeQuery()) {
                                         if (resultSet2.next()) {
@@ -228,6 +256,35 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
                                     }
                                 }
                             }
+                        }
+                    }
+                } finally {
+                    connection.close();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void displayActivityNotifications() {
+        try {
+            Connection connection = SQL_Connection.connectionClass();
+
+            if (connection != null) {
+                String queryEvent = "SELECT Activity_ID, Activity_Name, Date_Time_Created FROM tbl_activities WHERE School_Year = ?";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(queryEvent)){
+                    preparedStatement.setString(1, schyear);
+                     ResultSet resultSet = preparedStatement.executeQuery();
+
+                    if (resultSet != null) {
+                        while (resultSet.next()) {
+                            String eventID = resultSet.getString("Activity_ID");
+                            String title = resultSet.getString("Activity_Name");
+                            String datetime = resultSet.getString("Date_Time_Created");
+
+                            _headerTitle.add("Activity");
+                            _title.add(title);
+                            _date.add(datetime);
                         }
                     }
                 } finally {
@@ -263,9 +320,10 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
             Connection connection = SQL_Connection.connectionClass();
 
             if (connection != null) {
-                String queryAnnouncement = "SELECT Announcement_Title, Date_Time FROM tbl_Announcement";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(queryAnnouncement);
-                     ResultSet resultSet = preparedStatement.executeQuery()) {
+                String queryAnnouncement = "SELECT Announcement_Title, Date_Time FROM tbl_Announcement WHERE School_Year = ?";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(queryAnnouncement)){
+                    preparedStatement.setString(1, schyear);
+                     ResultSet resultSet = preparedStatement.executeQuery();
 
                     if (resultSet != null) {
                         while (resultSet.next()) {
@@ -290,9 +348,10 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
             Connection connection = SQL_Connection.connectionClass();
 
             if (connection != null) {
-                String query = "SELECT Message, Date_Time FROM tbl_absenteeism_notified WHERE Student_ID = ?";
+                String query = "SELECT Message, Date_Time FROM tbl_absenteeism_notified WHERE Student_ID = ? AND School_Year = ?";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                     preparedStatement.setString(1, studentId);
+                    preparedStatement.setString(2, schyear);
 
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
 

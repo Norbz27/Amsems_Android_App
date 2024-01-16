@@ -124,7 +124,7 @@
                 android:id="@+id/tvdetail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Event Details"
+                android:text="Activity Details"
                 android:layout_below="@id/linear2"
                 android:layout_marginHorizontal="25dp"
                 android:layout_marginTop="20dp"
