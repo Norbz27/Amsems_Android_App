@@ -50,6 +50,17 @@
                     android:id="@+id/rcview"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+                <TextView
+                    android:id="@+id/textView15"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="25dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_below="@id/calendarView"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:text="Activities"
+                    android:textColor="@color/darkblue"
+                    android:textSize="18sp" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rcview2"
                     android:layout_width="match_parent"

@@ -105,11 +105,11 @@ public class ActivityInfo_Activity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e(TAG, "Error decoding image: " + e.getMessage());
                     // Handle the case where decoding fails (e.g., set a default image)
-                    ivActivity.setImageResource(R.drawable.events);
+                    ivActivity.setImageResource(R.drawable.activity);
                 }
             } else {
                 // Handle the case where imageData is null or empty (set a default image)
-                ivActivity.setImageResource(R.drawable.events);
+                ivActivity.setImageResource(R.drawable.activity);
             }
 
             SimpleDateFormat sdf2 = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
